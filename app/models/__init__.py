@@ -1,1 +1,2 @@
-# This file is intentionally left blank.
+from .user import *
+from .product_template import *

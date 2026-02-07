@@ -1,0 +1,179 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Product Template",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "8267158"
+  },
+  "item": [
+    {
+      "name": "Get All Product Templates",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "{ productTemplates { id name code image isActive isDeletedAt isDeletedBy } }",
+            "variables": ""
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Product Template by ID",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "query GetProductTemplate($productId: Int!) { productTemplate(productId: $productId) { id name code image isActive isDeletedAt isDeletedBy } }",
+            "variables": "{\n  \"productId\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Product Template",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation CreateProductTemplate($name: String!, $code: String!, $image: String, $isActive: Boolean) { createProductTemplate(name: $name, code: $code, image: $image, isActive: $isActive) { id name code image isActive isDeletedAt isDeletedBy } }",
+            "variables": "{\n  \"name\": \"Sample Product\",\n  \"code\": \"PROD001\",\n  \"image\": \"https://example.com/image.jpg\",\n  \"isActive\": true\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Product Template",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation UpdateProductTemplate($productId: Int!, $name: String, $code: String, $image: String, $isActive: Boolean) { updateProductTemplate(productId: $productId, name: $name, code: $code, image: $image, isActive: $isActive) { id name code image isActive isDeletedAt isDeletedBy } }",
+            "variables": "{\n  \"productId\": 1,\n  \"name\": \"Updated Product Name\",\n  \"isActive\": false\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Product Template",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation DeleteProductTemplate($productId: Int!) { deleteProductTemplate(productId: $productId) { id name code image isActive isDeletedAt isDeletedBy } }",
+            "variables": "{\n  \"productId\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}
