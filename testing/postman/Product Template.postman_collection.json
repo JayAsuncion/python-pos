@@ -19,7 +19,7 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "{ productTemplates { id name code image isActive isDeletedAt isDeletedBy } }",
+            "query": "{ productTemplates { id name code image isActive deletedAt deletedBy } }",
             "variables": ""
           }
         },
@@ -48,7 +48,7 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "query GetProductTemplate($productId: Int!) { productTemplate(productId: $productId) { id name code image isActive isDeletedAt isDeletedBy } }",
+            "query": "query GetProductTemplate($productId: Int!) { productTemplate(productId: $productId) { id name code image isActive deletedAt deletedBy } }",
             "variables": "{\n  \"productId\": 1\n}"
           }
         },
@@ -77,7 +77,7 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "mutation CreateProductTemplate($name: String!, $code: String!, $image: String, $isActive: Boolean) { createProductTemplate(name: $name, code: $code, image: $image, isActive: $isActive) { id name code image isActive isDeletedAt isDeletedBy } }",
+            "query": "mutation CreateProductTemplate($name: String!, $code: String!, $image: String, $isActive: Boolean) { createProductTemplate(name: $name, code: $code, image: $image, isActive: $isActive) { id name code image isActive deletedAt deletedBy } }",
             "variables": "{\n  \"name\": \"Sample Product\",\n  \"code\": \"PROD001\",\n  \"image\": \"https://example.com/image.jpg\",\n  \"isActive\": true\n}"
           }
         },
@@ -106,7 +106,7 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "mutation UpdateProductTemplate($productId: Int!, $name: String, $code: String, $image: String, $isActive: Boolean) { updateProductTemplate(productId: $productId, name: $name, code: $code, image: $image, isActive: $isActive) { id name code image isActive isDeletedAt isDeletedBy } }",
+            "query": "mutation UpdateProductTemplate($productId: Int!, $name: String, $code: String, $image: String, $isActive: Boolean) { updateProductTemplate(productId: $productId, name: $name, code: $code, image: $image, isActive: $isActive) { id name code image isActive deletedAt deletedBy } }",
             "variables": "{\n  \"productId\": 1,\n  \"name\": \"Updated Product Name\",\n  \"isActive\": false\n}"
           }
         },
@@ -135,7 +135,7 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "mutation DeleteProductTemplate($productId: Int!) { deleteProductTemplate(productId: $productId) { id name code image isActive isDeletedAt isDeletedBy } }",
+            "query": "mutation DeleteProductTemplate($productId: Int!) { deleteProductTemplate(productId: $productId) { id name code image isActive deletedAt deletedBy } }",
             "variables": "{\n  \"productId\": 1\n}"
           }
         },

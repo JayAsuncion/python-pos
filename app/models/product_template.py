@@ -13,5 +13,5 @@ class ProductTemplate(Base):
     code = Column(String, nullable=False, unique=True)
     image = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
-    is_deleted_at = Column(PG_TIMESTAMP(timezone=True), nullable=True)
-    is_deleted_by = Column(Integer, nullable=True)
+    deleted_at = Column(PG_TIMESTAMP(timezone=True), nullable=True)
+    deleted_by = Column(Integer, nullable=True)

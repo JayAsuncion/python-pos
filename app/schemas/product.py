@@ -15,8 +15,8 @@ class ProductType:
     cost_price: float
     selling_price: float
     is_active: bool
-    is_deleted_at: Optional[datetime]
-    is_deleted_by: Optional[int]
+    deleted_at: Optional[datetime]
+    deleted_by: Optional[int]
     created_at: datetime
     created_by: Optional[int]
     updated_at: datetime

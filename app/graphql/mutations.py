@@ -103,8 +103,8 @@ class Mutation:
         code: str,
         image: Optional[str] = None,
         is_active: bool = True,
-        is_deleted_at: Optional[datetime] = None,
-        is_deleted_by: Optional[int] = None
+        deleted_at: Optional[datetime] = None,
+        deleted_by: Optional[int] = None
     ) -> ProductTemplateType:
         db = SessionLocal()
         db_product = ProductTemplateModel(
@@ -112,8 +112,8 @@ class Mutation:
             code=code,
             image=image,
             is_active=is_active,
-            is_deleted_at=is_deleted_at,
-            is_deleted_by=is_deleted_by
+            deleted_at=deleted_at,
+            deleted_by=deleted_by
         )
         db.add(db_product)
         db.commit()
@@ -124,8 +124,8 @@ class Mutation:
             code=db_product.code,
             image=db_product.image,
             is_active=db_product.is_active,
-            is_deleted_at=db_product.is_deleted_at,
-            is_deleted_by=db_product.is_deleted_by
+            deleted_at=db_product.deleted_at,
+            deleted_by=db_product.deleted_by
         )
         db.close()
         return result
@@ -138,8 +138,8 @@ class Mutation:
         code: Optional[str] = None,
         image: Optional[str] = None,
         is_active: Optional[bool] = None,
-        is_deleted_at: Optional[datetime] = None,
-        is_deleted_by: Optional[int] = None
+        deleted_at: Optional[datetime] = None,
+        deleted_by: Optional[int] = None
     ) -> Optional[ProductTemplateType]:
         db = SessionLocal()
         db_product = db.query(ProductTemplateModel).filter(ProductTemplateModel.id == product_id).first()
@@ -152,10 +152,10 @@ class Mutation:
                 db_product.image = image
             if is_active is not None:
                 db_product.is_active = is_active
-            if is_deleted_at is not None:
-                db_product.is_deleted_at = is_deleted_at
-            if is_deleted_by is not None:
-                db_product.is_deleted_by = is_deleted_by
+            if deleted_at is not None:
+                db_product.deleted_at = deleted_at
+            if deleted_by is not None:
+                db_product.deleted_by = deleted_by
             db.commit()
             db.refresh(db_product)
             result = ProductTemplateType(
@@ -164,8 +164,8 @@ class Mutation:
                 code=db_product.code,
                 image=db_product.image,
                 is_active=db_product.is_active,
-                is_deleted_at=db_product.is_deleted_at,
-                is_deleted_by=db_product.is_deleted_by
+                deleted_at=db_product.deleted_at,
+                deleted_by=db_product.deleted_by
             )
         else:
             result = None
@@ -183,8 +183,8 @@ class Mutation:
                 code=db_product.code,
                 image=db_product.image,
                 is_active=db_product.is_active,
-                is_deleted_at=db_product.is_deleted_at,
-                is_deleted_by=db_product.is_deleted_by
+                deleted_at=db_product.deleted_at,
+                deleted_by=db_product.deleted_by
             )
             db.delete(db_product)
             db.commit()
@@ -205,8 +205,8 @@ class Mutation:
         code: Optional[str] = None,
         image: Optional[str] = None,
         is_active: bool = True,
-        is_deleted_at: Optional[datetime] = None,
-        is_deleted_by: Optional[int] = None,
+        deleted_at: Optional[datetime] = None,
+        deleted_by: Optional[int] = None,
         created_by: Optional[int] = None
     ) -> ProductType:
         db = SessionLocal()
@@ -236,8 +236,8 @@ class Mutation:
             cost_price=cost_price,
             selling_price=selling_price,
             is_active=is_active,
-            is_deleted_at=is_deleted_at,
-            is_deleted_by=is_deleted_by,
+            deleted_at=deleted_at,
+            deleted_by=deleted_by,
             created_by=created_by
         )
         db.add(db_product)
@@ -254,8 +254,8 @@ class Mutation:
             cost_price=float(db_product.cost_price),
             selling_price=float(db_product.selling_price),
             is_active=db_product.is_active,
-            is_deleted_at=db_product.is_deleted_at,
-            is_deleted_by=db_product.is_deleted_by,
+            deleted_at=db_product.deleted_at,
+            deleted_by=db_product.deleted_by,
             created_at=db_product.created_at,
             created_by=db_product.created_by,
             updated_at=db_product.updated_at,
@@ -277,8 +277,8 @@ class Mutation:
         cost_price: Optional[float] = None,
         selling_price: Optional[float] = None,
         is_active: Optional[bool] = None,
-        is_deleted_at: Optional[datetime] = None,
-        is_deleted_by: Optional[int] = None,
+        deleted_at: Optional[datetime] = None,
+        deleted_by: Optional[int] = None,
         updated_by: Optional[int] = None
     ) -> Optional[ProductType]:
         db = SessionLocal()
@@ -302,10 +302,10 @@ class Mutation:
                 db_product.selling_price = selling_price
             if is_active is not None:
                 db_product.is_active = is_active
-            if is_deleted_at is not None:
-                db_product.is_deleted_at = is_deleted_at
-            if is_deleted_by is not None:
-                db_product.is_deleted_by = is_deleted_by
+            if deleted_at is not None:
+                db_product.deleted_at = deleted_at
+            if deleted_by is not None:
+                db_product.deleted_by = deleted_by
             
             # Always update updated_by when provided
             db_product.updated_by = updated_by
@@ -323,8 +323,8 @@ class Mutation:
                 cost_price=float(db_product.cost_price),
                 selling_price=float(db_product.selling_price),
                 is_active=db_product.is_active,
-                is_deleted_at=db_product.is_deleted_at,
-                is_deleted_by=db_product.is_deleted_by,
+                deleted_at=db_product.deleted_at,
+                deleted_by=db_product.deleted_by,
                 created_at=db_product.created_at,
                 created_by=db_product.created_by,
                 updated_at=db_product.updated_at,
@@ -351,8 +351,8 @@ class Mutation:
                 cost_price=float(db_product.cost_price),
                 selling_price=float(db_product.selling_price),
                 is_active=db_product.is_active,
-                is_deleted_at=db_product.is_deleted_at,
-                is_deleted_by=db_product.is_deleted_by,
+                deleted_at=db_product.deleted_at,
+                deleted_by=db_product.deleted_by,
                 created_at=db_product.created_at,
                 created_by=db_product.created_by,
                 updated_at=db_product.updated_at,

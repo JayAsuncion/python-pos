@@ -9,5 +9,5 @@ class ProductTemplateType:
     code: str
     image: Optional[str]
     is_active: bool
-    is_deleted_at: Optional[datetime]
-    is_deleted_by: Optional[int]
+    deleted_at: Optional[datetime]
+    deleted_by: Optional[int]

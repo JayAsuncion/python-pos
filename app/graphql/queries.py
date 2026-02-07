@@ -34,8 +34,8 @@ class Query:
             code=product.code,
             image=product.image,
             is_active=product.is_active,
-            is_deleted_at=product.is_deleted_at,
-            is_deleted_by=product.is_deleted_by
+            deleted_at=product.deleted_at,
+            deleted_by=product.deleted_by
         ) for product in products]
 
     @strawberry.field
@@ -50,8 +50,8 @@ class Query:
                 code=product.code,
                 image=product.image,
                 is_active=product.is_active,
-                is_deleted_at=product.is_deleted_at,
-                is_deleted_by=product.is_deleted_by
+                deleted_at=product.deleted_at,
+                deleted_by=product.deleted_by
             )
         return None
 
@@ -71,8 +71,8 @@ class Query:
             cost_price=float(product.cost_price),
             selling_price=float(product.selling_price),
             is_active=product.is_active,
-            is_deleted_at=product.is_deleted_at,
-            is_deleted_by=product.is_deleted_by,
+            deleted_at=product.deleted_at,
+            deleted_by=product.deleted_by,
             created_at=product.created_at,
             created_by=product.created_by,
             updated_at=product.updated_at,
@@ -96,8 +96,8 @@ class Query:
                 cost_price=float(product.cost_price),
                 selling_price=float(product.selling_price),
                 is_active=product.is_active,
-                is_deleted_at=product.is_deleted_at,
-                is_deleted_by=product.is_deleted_by,
+                deleted_at=product.deleted_at,
+                deleted_by=product.deleted_by,
                 created_at=product.created_at,
                 created_by=product.created_by,
                 updated_at=product.updated_at,

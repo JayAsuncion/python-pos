@@ -19,7 +19,7 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "{ products { id productTemplateId name code image startingStock runningStock costPrice sellingPrice isActive isDeletedAt isDeletedBy createdAt createdBy updatedAt updatedBy } }",
+            "query": "{ products { id productTemplateId name code image startingStock runningStock costPrice sellingPrice isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
             "variables": ""
           }
         },
@@ -48,7 +48,7 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "query GetProduct($productId: Int!) { product(productId: $productId) { id productTemplateId name code image startingStock runningStock costPrice sellingPrice isActive isDeletedAt isDeletedBy createdAt createdBy updatedAt updatedBy } }",
+            "query": "query GetProduct($productId: Int!) { product(productId: $productId) { id productTemplateId name code image startingStock runningStock costPrice sellingPrice isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
             "variables": "{\n  \"productId\": 1\n}"
           }
         },
@@ -77,7 +77,7 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "mutation CreateProduct($productTemplateId: Int!, $startingStock: Float!, $costPrice: Float!, $sellingPrice: Float!, $runningStock: Float, $name: String, $code: String, $image: String, $isActive: Boolean, $createdBy: Int) { createProduct(productTemplateId: $productTemplateId, startingStock: $startingStock, costPrice: $costPrice, sellingPrice: $sellingPrice, runningStock: $runningStock, name: $name, code: $code, image: $image, isActive: $isActive, createdBy: $createdBy) { id productTemplateId name code image startingStock runningStock costPrice sellingPrice isActive isDeletedAt isDeletedBy createdAt createdBy updatedAt updatedBy } }",
+            "query": "mutation CreateProduct($productTemplateId: Int!, $startingStock: Float!, $costPrice: Float!, $sellingPrice: Float!, $runningStock: Float, $name: String, $code: String, $image: String, $isActive: Boolean, $createdBy: Int) { createProduct(productTemplateId: $productTemplateId, startingStock: $startingStock, costPrice: $costPrice, sellingPrice: $sellingPrice, runningStock: $runningStock, name: $name, code: $code, image: $image, isActive: $isActive, createdBy: $createdBy) { id productTemplateId name code image startingStock runningStock costPrice sellingPrice isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
             "variables": "{\n  \"productTemplateId\": 1,\n  \"startingStock\": 100.0,\n  \"costPrice\": 10.50,\n  \"sellingPrice\": 15.99\n}"
           }
         },
@@ -106,7 +106,7 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "mutation UpdateProduct($productId: Int!, $productTemplateId: Int, $name: String, $code: String, $image: String, $startingStock: Float, $runningStock: Float, $costPrice: Float, $sellingPrice: Float, $isActive: Boolean, $updatedBy: Int) { updateProduct(productId: $productId, productTemplateId: $productTemplateId, name: $name, code: $code, image: $image, startingStock: $startingStock, runningStock: $runningStock, costPrice: $costPrice, sellingPrice: $sellingPrice, isActive: $isActive, updatedBy: $updatedBy) { id productTemplateId name code image startingStock runningStock costPrice sellingPrice isActive isDeletedAt isDeletedBy createdAt createdBy updatedAt updatedBy } }",
+            "query": "mutation UpdateProduct($productId: Int!, $productTemplateId: Int, $name: String, $code: String, $image: String, $startingStock: Float, $runningStock: Float, $costPrice: Float, $sellingPrice: Float, $isActive: Boolean, $updatedBy: Int) { updateProduct(productId: $productId, productTemplateId: $productTemplateId, name: $name, code: $code, image: $image, startingStock: $startingStock, runningStock: $runningStock, costPrice: $costPrice, sellingPrice: $sellingPrice, isActive: $isActive, updatedBy: $updatedBy) { id productTemplateId name code image startingStock runningStock costPrice sellingPrice isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
             "variables": "{\n  \"productId\": 1,\n  \"name\": \"Updated Product Name\",\n  \"runningStock\": 85.5,\n  \"isActive\": false\n}"
           }
         },
@@ -135,7 +135,7 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "mutation DeleteProduct($productId: Int!) { deleteProduct(productId: $productId) { id productTemplateId name code image startingStock runningStock costPrice sellingPrice isActive isDeletedAt isDeletedBy createdAt createdBy updatedAt updatedBy } }",
+            "query": "mutation DeleteProduct($productId: Int!) { deleteProduct(productId: $productId) { id productTemplateId name code image startingStock runningStock costPrice sellingPrice isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
             "variables": "{\n  \"productId\": 1\n}"
           }
         },
