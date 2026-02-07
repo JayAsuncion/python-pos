@@ -1,0 +1,179 @@
+{
+  "info": {
+    "_postman_id": "b2c3d4e5-f6a7-8901-bcde-ef2345678901",
+    "name": "Product",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "8267158"
+  },
+  "item": [
+    {
+      "name": "Get All Products",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "{ products { id productTemplateId name code image startingStock runningStock costPrice sellingPrice isActive isDeletedAt isDeletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": ""
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Product by ID",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "query GetProduct($productId: Int!) { product(productId: $productId) { id productTemplateId name code image startingStock runningStock costPrice sellingPrice isActive isDeletedAt isDeletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"productId\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Product",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation CreateProduct($productTemplateId: Int!, $startingStock: Float!, $costPrice: Float!, $sellingPrice: Float!, $runningStock: Float, $name: String, $code: String, $image: String, $isActive: Boolean, $createdBy: Int) { createProduct(productTemplateId: $productTemplateId, startingStock: $startingStock, costPrice: $costPrice, sellingPrice: $sellingPrice, runningStock: $runningStock, name: $name, code: $code, image: $image, isActive: $isActive, createdBy: $createdBy) { id productTemplateId name code image startingStock runningStock costPrice sellingPrice isActive isDeletedAt isDeletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"productTemplateId\": 1,\n  \"startingStock\": 100.0,\n  \"costPrice\": 10.50,\n  \"sellingPrice\": 15.99\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Product",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation UpdateProduct($productId: Int!, $productTemplateId: Int, $name: String, $code: String, $image: String, $startingStock: Float, $runningStock: Float, $costPrice: Float, $sellingPrice: Float, $isActive: Boolean, $updatedBy: Int) { updateProduct(productId: $productId, productTemplateId: $productTemplateId, name: $name, code: $code, image: $image, startingStock: $startingStock, runningStock: $runningStock, costPrice: $costPrice, sellingPrice: $sellingPrice, isActive: $isActive, updatedBy: $updatedBy) { id productTemplateId name code image startingStock runningStock costPrice sellingPrice isActive isDeletedAt isDeletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"productId\": 1,\n  \"name\": \"Updated Product Name\",\n  \"runningStock\": 85.5,\n  \"isActive\": false\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Product",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation DeleteProduct($productId: Int!) { deleteProduct(productId: $productId) { id productTemplateId name code image startingStock runningStock costPrice sellingPrice isActive isDeletedAt isDeletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"productId\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}
