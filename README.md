@@ -67,6 +67,25 @@ The project requires the following Python packages, which are listed in `require
 - SQLAlchemy
 - Uvicorn
 
+## Local Setup Versions
+1. Load virtual env
+```
+source python-pos-env-39/Scripts/activate
+```
+
+2. Python
+```
+python --version
+# Python 3.9.13
+```
+
+3. PIP
+```
+pip --version
+# pip 22.0.4 from E:\Git-Repos\python-pos\python-pos-env-39\lib\site-packages\pip (python 3.9)
+# (python-pos-env-39)
+```
+
 ## License
 
 This project is licensed under the MIT License.
