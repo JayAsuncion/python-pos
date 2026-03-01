@@ -1,12 +1,14 @@
 import strawberry
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, time
 from app.models.user import User as UserModel
 from app.models.product_template import ProductTemplate as ProductTemplateModel
 from app.models.product import Product as ProductModel
+from app.models.shift import Shift as ShiftModel
 from app.schemas.user import UserType
 from app.schemas.product_template import ProductTemplateType
 from app.schemas.product import ProductType
+from app.schemas.shift import ShiftType
 from app.database import SessionLocal
 
 @strawberry.type
@@ -359,6 +361,122 @@ class Mutation:
                 updated_by=db_product.updated_by
             )
             db.delete(db_product)
+            db.commit()
+        else:
+            result = None
+        db.close()
+        return result
+
+    @strawberry.mutation(name="createShift")
+    def create_shift(
+        self,
+        shift_name: str,
+        start_time: time,
+        end_time: time,
+        is_active: bool = True,
+        deleted_at: Optional[datetime] = None,
+        deleted_by: Optional[int] = None,
+        created_by: Optional[int] = None
+    ) -> ShiftType:
+        db = SessionLocal()
+        db_shift = ShiftModel(
+            shift_name=shift_name,
+            start_time=start_time,
+            end_time=end_time,
+            is_active=is_active,
+            deleted_at=deleted_at,
+            deleted_by=deleted_by,
+            created_by=created_by
+        )
+        db.add(db_shift)
+        db.commit()
+        db.refresh(db_shift)
+        result = ShiftType(
+            id=db_shift.id,
+            shift_name=db_shift.shift_name,
+            start_time=db_shift.start_time,
+            end_time=db_shift.end_time,
+            is_active=db_shift.is_active,
+            deleted_at=db_shift.deleted_at,
+            deleted_by=db_shift.deleted_by,
+            created_at=db_shift.created_at,
+            created_by=db_shift.created_by,
+            updated_at=db_shift.updated_at,
+            updated_by=db_shift.updated_by
+        )
+        db.close()
+        return result
+
+    @strawberry.mutation(name="updateShift")
+    def update_shift(
+        self,
+        shift_id: int,
+        shift_name: Optional[str] = None,
+        start_time: Optional[time] = None,
+        end_time: Optional[time] = None,
+        is_active: Optional[bool] = None,
+        deleted_at: Optional[datetime] = None,
+        deleted_by: Optional[int] = None,
+        updated_by: Optional[int] = None
+    ) -> Optional[ShiftType]:
+        db = SessionLocal()
+        db_shift = db.query(ShiftModel).filter(ShiftModel.id == shift_id).first()
+        if db_shift:
+            if shift_name is not None:
+                db_shift.shift_name = shift_name
+            if start_time is not None:
+                db_shift.start_time = start_time
+            if end_time is not None:
+                db_shift.end_time = end_time
+            if is_active is not None:
+                db_shift.is_active = is_active
+            if deleted_at is not None:
+                db_shift.deleted_at = deleted_at
+            if deleted_by is not None:
+                db_shift.deleted_by = deleted_by
+            
+            # Always update updated_by when provided
+            db_shift.updated_by = updated_by
+            
+            db.commit()
+            db.refresh(db_shift)
+            result = ShiftType(
+                id=db_shift.id,
+                shift_name=db_shift.shift_name,
+                start_time=db_shift.start_time,
+                end_time=db_shift.end_time,
+                is_active=db_shift.is_active,
+                deleted_at=db_shift.deleted_at,
+                deleted_by=db_shift.deleted_by,
+                created_at=db_shift.created_at,
+                created_by=db_shift.created_by,
+                updated_at=db_shift.updated_at,
+                updated_by=db_shift.updated_by
+            )
+        else:
+            result = None
+        db.close()
+        return result
+
+    @strawberry.mutation(name="deleteShift")
+    def delete_shift(self, shift_id: int) -> Optional[ShiftType]:
+        db = SessionLocal()
+        db_shift = db.query(ShiftModel).filter(ShiftModel.id == shift_id).first()
+        if db_shift:
+            result = ShiftType(
+                id=db_shift.id,
+                shift_name=db_shift.shift_name,
+                start_time=db_shift.start_time,
+                end_time=db_shift.end_time,
+                is_active=db_shift.is_active,
+                deleted_at=db_shift.deleted_at,
+                deleted_by=db_shift.deleted_by,
+                created_at=db_shift.created_at,
+                created_by=db_shift.created_by,
+                updated_at=db_shift.updated_at,
+                updated_by=db_shift.updated_by
+            )
+            db.delete(db_shift)
             db.commit()
         else:
             result = None

@@ -3,9 +3,11 @@ from typing import List, Optional
 from app.models.user import User as UserModel
 from app.models.product_template import ProductTemplate as ProductTemplateModel
 from app.models.product import Product as ProductModel
+from app.models.shift import Shift as ShiftModel
 from app.schemas.user import UserType
 from app.schemas.product_template import ProductTemplateType
 from app.schemas.product import ProductType
+from app.schemas.shift import ShiftType
 from app.database import SessionLocal
 
 @strawberry.type
@@ -102,5 +104,45 @@ class Query:
                 created_by=product.created_by,
                 updated_at=product.updated_at,
                 updated_by=product.updated_by
+            )
+        return None
+
+    @strawberry.field
+    def shifts(self) -> List[ShiftType]:
+        db = SessionLocal()
+        shifts = db.query(ShiftModel).all()
+        db.close()
+        return [ShiftType(
+            id=shift.id,
+            shift_name=shift.shift_name,
+            start_time=shift.start_time,
+            end_time=shift.end_time,
+            is_active=shift.is_active,
+            deleted_at=shift.deleted_at,
+            deleted_by=shift.deleted_by,
+            created_at=shift.created_at,
+            created_by=shift.created_by,
+            updated_at=shift.updated_at,
+            updated_by=shift.updated_by
+        ) for shift in shifts]
+
+    @strawberry.field
+    def shift(self, shift_id: int) -> Optional[ShiftType]:
+        db = SessionLocal()
+        shift = db.query(ShiftModel).filter(ShiftModel.id == shift_id).first()
+        db.close()
+        if shift:
+            return ShiftType(
+                id=shift.id,
+                shift_name=shift.shift_name,
+                start_time=shift.start_time,
+                end_time=shift.end_time,
+                is_active=shift.is_active,
+                deleted_at=shift.deleted_at,
+                deleted_by=shift.deleted_by,
+                created_at=shift.created_at,
+                created_by=shift.created_by,
+                updated_at=shift.updated_at,
+                updated_by=shift.updated_by
             )
         return None

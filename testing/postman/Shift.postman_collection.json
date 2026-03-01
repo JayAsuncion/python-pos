@@ -1,0 +1,179 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Shift",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "8267158"
+  },
+  "item": [
+    {
+      "name": "Get All Shifts",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "{ shifts { id shiftName startTime endTime isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": ""
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Shift by ID",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "query GetShift($shiftId: Int!) { shift(shiftId: $shiftId) { id shiftName startTime endTime isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"shiftId\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Shift",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation CreateShift($shiftName: String!, $startTime: Time!, $endTime: Time!, $isActive: Boolean, $createdBy: Int) { createShift(shiftName: $shiftName, startTime: $startTime, endTime: $endTime, isActive: $isActive, createdBy: $createdBy) { id shiftName startTime endTime isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"shiftName\": \"Shift A\",\n  \"startTime\": \"05:00:00+00:00\",\n  \"endTime\": \"13:00:00+00:00\",\n  \"isActive\": true,\n  \"createdBy\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Shift",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation UpdateShift($shiftId: Int!, $shiftName: String, $startTime: Time, $endTime: Time, $isActive: Boolean, $updatedBy: Int) { updateShift(shiftId: $shiftId, shiftName: $shiftName, startTime: $startTime, endTime: $endTime, isActive: $isActive, updatedBy: $updatedBy) { id shiftName startTime endTime isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"shiftId\": 1,\n  \"shiftName\": \"Morning Shift\",\n  \"startTime\": \"06:00:00+00:00\",\n  \"isActive\": true,\n  \"updatedBy\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Shift",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation DeleteShift($shiftId: Int!) { deleteShift(shiftId: $shiftId) { id shiftName startTime endTime isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"shiftId\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}

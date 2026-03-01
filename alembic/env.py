@@ -10,6 +10,7 @@ from alembic import context
 from app.database import Base
 from app.models.product_template import ProductTemplate
 from app.models.user import User
+from app.models.shift import Shift
 
 config = context.config
 
