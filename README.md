@@ -68,6 +68,14 @@ python-pos-fastapi-graphql-app
   - Each entity has its own queries file in `app/graphql/queries/{entity}.py`
   - Mutations and queries are aggregated via class inheritance in `__init__.py` files
   - This structure keeps files maintainable (50-150 lines each) and easy to navigate
+- **Authentication & Authorization:**
+  - The API uses JWT-based authentication with Role-Based Access Control (RBAC)
+  - All GraphQL operations (except `login`) require authentication
+  - Every query and mutation enforces permission checks using `require_permission(info, "PERMISSION_CODE")`
+  - Permissions follow the pattern: `{ACTION}_{ENTITY}` (e.g., `CREATE_USER`, `VIEW_PRODUCT`)
+  - Users are assigned roles, and roles have permissions
+  - To obtain a JWT token, use the `login` mutation with username and password
+  - Include the token in the `Authorization` header as `Bearer <token>` for all subsequent requests
 - Pydantic schemas for data validation and serialization can be found in the `app/schemas` directory.
 
 ## Dependencies

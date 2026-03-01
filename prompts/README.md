@@ -34,11 +34,28 @@ Comprehensive documentation of all entities in the system including:
 Step-by-step guide for creating new entities with:
 - SQLAlchemy model patterns
 - Strawberry GraphQL schema patterns
+- RBAC (Role-Based Access Control) implementation patterns
 - Migration generation steps
 - Implementation checklist
 - Code examples
 
 **Always reference `AGENTS.md` and `entity-context.md` before using this template.**
+
+**⚠️ CRITICAL:** Every query and mutation MUST implement permission checks using `require_permission`.
+
+---
+
+### 🔐 [IMPLEMENTATION_PLAN_JWT_RBAC.md](IMPLEMENTATION_PLAN_JWT_RBAC.md)
+**Authentication & Authorization System**
+
+Complete documentation of the JWT authentication and RBAC permission system including:
+- Architecture and design decisions
+- Permission-based authorization flow
+- Implementation details
+- Migration history
+- Security patterns
+
+Reference this when working with authentication, permissions, roles, or user management.
 
 ---
 
@@ -53,9 +70,13 @@ Step-by-step guide for creating new entities with:
    ↓
 4. Create/modify entity following patterns
    ↓
-5. Update entity-context.md with new documentation (MANDATORY)
+5. Implement RBAC permission checks in ALL queries and mutations
    ↓
-6. Update "Last Updated" date in entity-context.md
+6. Add permissions to seed_permissions.py and run seeding
+   ↓
+7. Update entity-context.md with new documentation (MANDATORY)
+   ↓
+8. Update "Last Updated" date in entity-context.md
 ```
 
 ---
@@ -76,5 +97,12 @@ These guidelines exist to ensure:
 - Proper documentation of all changes
 - Easy onboarding for future agents
 - Prevention of duplicate or conflicting entities
+- **Proper security through RBAC implementation on every endpoint**
 
-**Follow these guidelines strictly.** Incomplete work (especially missing documentation updates) should be flagged and completed before considering a task done.
+**Follow these guidelines strictly.** Incomplete work (especially missing documentation updates or RBAC implementation) should be flagged and completed before considering a task done.
+
+**Security Checklist:**
+- ✅ Every query/mutation has `info: strawberry.types.Info` parameter
+- ✅ Every query/mutation calls `require_permission(info, "PERMISSION_CODE")`
+- ✅ Permissions are added to `seed_permissions.py`
+- ✅ Mutations use `user.id` for audit fields (created_by, updated_by, deleted_by)

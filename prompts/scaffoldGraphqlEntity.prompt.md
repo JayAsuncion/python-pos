@@ -128,26 +128,73 @@ class EntityNameType:
    from typing import Optional
    from app.models.{entity} import EntityName as EntityModel
    from app.schemas.{entity} import EntityNameType
+   from app.auth.permissions import require_permission
    from app.database import SessionLocal
 
    @strawberry.type
    class EntityNameMutations:
        @strawberry.mutation(name="createEntityName")
-       def create_entity_name(self, field1: str, field2: int, ...) -> EntityNameType:
+       def create_entity_name(
+           self,
+           info: strawberry.types.Info,
+           field1: str,
+           field2: int,
+           ...
+       ) -> EntityNameType:
+           # RBAC: Require permission before proceeding
+           user = require_permission(info, "CREATE_ENTITY_NAME")
+           
            db = SessionLocal()
-           # Implementation
+           # Implementation - include created_by from authenticated user
+           entity = EntityModel(
+               field1=field1,
+               field2=field2,
+               created_by=user.id
+           )
+           db.add(entity)
+           db.commit()
+           db.refresh(entity)
            db.close()
            return result
        
        @strawberry.mutation(name="updateEntityName")
-       def update_entity_name(self, entity_id: int, ...) -> Optional[EntityNameType]:
-           # Implementation
-           pass
+       def update_entity_name(
+           self,
+           info: strawberry.types.Info,
+           entity_id: int,
+           ...
+       ) -> Optional[EntityNameType]:
+           # RBAC: Require permission before proceeding
+           user = require_permission(info, "UPDATE_ENTITY_NAME")
+           
+           db = SessionLocal()
+           # Implementation - include updated_by from authenticated user
+           entity = db.query(EntityModel).filter(EntityModel.id == entity_id).first()
+           if entity:
+               # Update fields
+               entity.updated_by = user.id
+               db.commit()
+           db.close()
+           return result
        
        @strawberry.mutation(name="deleteEntityName")
-       def delete_entity_name(self, entity_id: int, deleted_by: int) -> Optional[EntityNameType]:
-           # Soft delete implementation
-           pass
+       def delete_entity_name(
+           self,
+           info: strawberry.types.Info,
+           entity_id: int
+       ) -> Optional[EntityNameType]:
+           # RBAC: Require permission before proceeding
+           user = require_permission(info, "DELETE_ENTITY_NAME")
+           
+           db = SessionLocal()
+           # Soft delete implementation - include deleted_by from authenticated user
+           entity = db.query(EntityModel).filter(EntityModel.id == entity_id).first()
+           if entity:
+               entity.deleted_at = func.now()
+               entity.deleted_by = user.id
+               db.commit()
+           db.close()
+           return result
    ```
    
    **b) Create Queries File** (`app/graphql/queries/{entity}.py`):
@@ -156,21 +203,33 @@ class EntityNameType:
    from typing import List, Optional
    from app.models.{entity} import EntityName as EntityModel
    from app.schemas.{entity} import EntityNameType
+   from app.auth.permissions import require_permission
    from app.database import SessionLocal
 
    @strawberry.type
    class EntityNameQueries:
        @strawberry.field
-       def entity_names(self) -> List[EntityNameType]:
+       def entity_names(self, info: strawberry.types.Info) -> List[EntityNameType]:
+           # RBAC: Require permission before proceeding
+           require_permission(info, "VIEW_ENTITY_NAME")
+           
            db = SessionLocal()
            # Implementation for list query
+           entities = db.query(EntityModel).filter(EntityModel.deleted_at.is_(None)).all()
            db.close()
            return results
        
        @strawberry.field
-       def entity_name(self, entity_id: int) -> Optional[EntityNameType]:
+       def entity_name(self, info: strawberry.types.Info, entity_id: int) -> Optional[EntityNameType]:
+           # RBAC: Require permission before proceeding
+           require_permission(info, "VIEW_ENTITY_NAME")
+           
            db = SessionLocal()
            # Implementation for single entity query
+           entity = db.query(EntityModel).filter(
+               EntityModel.id == entity_id,
+               EntityModel.deleted_at.is_(None)
+           ).first()
            db.close()
            return result
    ```
@@ -226,6 +285,61 @@ class EntityNameType:
 - Mutation names: camelCase with verb prefix (e.g., `createProductSlot`)
 - Parameter names in queries: entity_name + "_id" (e.g., `product_slot_id`)
 - File names: snake_case matching entity name (e.g., `product_slot.py`)
+
+## RBAC (Role-Based Access Control) Requirements
+
+**⚠️ MANDATORY:** Every query and mutation MUST implement permission checks using the `require_permission` function.
+
+### Permission Naming Convention
+Permissions follow the pattern: `{ACTION}_{ENTITY_NAME}`
+- Actions: `CREATE`, `UPDATE`, `DELETE`, `VIEW`
+- Entity name: SCREAMING_SNAKE_CASE (e.g., `USER`, `PRODUCT_SLOT`)
+- Examples: `CREATE_USER`, `VIEW_PRODUCT`, `DELETE_SHIFT_TEMPLATE`
+
+### Implementation Pattern
+
+**1. Import the permission helper:**
+```python
+from app.auth.permissions import require_permission
+```
+
+**2. Add `info: strawberry.types.Info` parameter:**
+Every query and mutation must accept the `info` parameter as the first parameter after `self`.
+
+**3. Call `require_permission` at the start:**
+```python
+# For mutations that need the authenticated user (create, update, delete):
+user = require_permission(info, "CREATE_ENTITY_NAME")
+# Use user.id for created_by, updated_by, deleted_by
+
+# For queries (when you don't need the user object):
+require_permission(info, "VIEW_ENTITY_NAME")
+```
+
+**4. Use the returned user for audit fields:**
+- `created_by=user.id` in create operations
+- `updated_by=user.id` in update operations  
+- `deleted_by=user.id` in delete operations
+
+### Permission Seeding
+After creating a new entity, you must add its permissions to `app/auth/seed_permissions.py`:
+
+```python
+permissions.extend([
+    {"code": "CREATE_ENTITY_NAME", "name": "Create Entity Name", "category": "ENTITY_NAME"},
+    {"code": "VIEW_ENTITY_NAME", "name": "View Entity Name", "category": "ENTITY_NAME"},
+    {"code": "UPDATE_ENTITY_NAME", "name": "Update Entity Name", "category": "ENTITY_NAME"},
+    {"code": "DELETE_ENTITY_NAME", "name": "Delete Entity Name", "category": "ENTITY_NAME"},
+])
+```
+
+Then run the seeding script to add permissions to the database:
+```bash
+python -m app.auth.seed_permissions
+```
+
+### Exception: Login Mutation
+The only mutation that does NOT require authentication is the `login` mutation in `app/graphql/mutations/auth.py`.
 
 ## GraphQL Organization (Entity-Based Structure)
 The GraphQL layer is organized by entity for better maintainability:
