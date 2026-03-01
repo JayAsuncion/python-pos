@@ -4,6 +4,24 @@ description: Create complete entity with model, schema, GraphQL endpoints, migra
 argument-hint: entity name and fields (e.g., "shift with shift_name, start_time, end_time")
 ---
 
+## Prerequisites
+
+**⚠️ MANDATORY READING:**
+1. **[`prompts/AGENTS.md`](AGENTS.md)** - Critical instructions for entity changes
+2. **[`prompts/entity-context.md`](entity-context.md)** - Current entity documentation
+
+Before creating any new entity, read these files to understand:
+- Existing entities and their relationships
+- Naming conventions and patterns
+- Audit trail levels (no audit, soft delete, full audit)
+- Business rules and constraints
+- How the new entity fits into the overall data model
+- **Your responsibility to update documentation after creating entities**
+
+This ensures consistency and helps avoid conflicts with existing entities.
+
+---
+
 Create a new entity for the specified name with all necessary components following the project's established patterns.
 
 **First, gather requirements if not provided:**
@@ -126,6 +144,14 @@ class EntityNameType:
    ```
 
 8. **Verify:** Check for errors with `get_errors` tool
+
+9. **⚠️ UPDATE DOCUMENTATION (MANDATORY):**
+   - Open [`prompts/entity-context.md`](entity-context.md)
+   - Add complete documentation for your new entity following the template in [`prompts/AGENTS.md`](AGENTS.md)
+   - Update the relationship diagram if needed
+   - Document any business workflows or special validation rules
+   - Update the "Last Updated" date at the top of `entity-context.md`
+   - **This step is NOT optional** - see [`prompts/AGENTS.md`](AGENTS.md) for details
 
 ## Naming Conventions
 - Model class: PascalCase (e.g., `ProductSlot`)
