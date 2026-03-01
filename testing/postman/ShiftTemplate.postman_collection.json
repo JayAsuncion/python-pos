@@ -1,0 +1,179 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "ShiftTemplate",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "8267158"
+  },
+  "item": [
+    {
+      "name": "Get All ShiftTemplates",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "{ shiftTemplates { id shiftName startTime endTime order isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": ""
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get ShiftTemplate by ID",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "query GetShiftTemplate($shiftTemplateId: Int!) { shiftTemplate(shiftTemplateId: $shiftTemplateId) { id shiftName startTime endTime order isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"shiftTemplateId\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create ShiftTemplate",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation CreateShiftTemplate($shiftName: String!, $startTime: Time!, $endTime: Time!, $order: Int!, $isActive: Boolean, $createdBy: Int) { createShiftTemplate(shiftName: $shiftName, startTime: $startTime, endTime: $endTime, order: $order, isActive: $isActive, createdBy: $createdBy) { id shiftName startTime endTime order isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{{\n  \"shiftName\": \"ShiftTemplate A\",\n  \"startTime\": \"05:00:00+00:00\",\n  \"endTime\": \"13:00:00+00:00\",\n  \"order\": 1,\n  \"isActive\": true,\n  \"createdBy\": 1\n}}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update ShiftTemplate",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation UpdateShiftTemplate($shiftTemplateId: Int!, $shiftName: String, $startTime: Time, $endTime: Time, $order: Int, $isActive: Boolean, $updatedBy: Int) { updateShiftTemplate(shiftTemplateId: $shiftTemplateId, shiftName: $shiftName, startTime: $startTime, endTime: $endTime, order: $order, isActive: $isActive, updatedBy: $updatedBy) { id shiftName startTime endTime order isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"shiftTemplateId\": 1,\n  \"shiftName\": \"Morning ShiftTemplate\",\n  \"startTime\": \"06:00:00+00:00\",\n  \"isActive\": true,\n  \"updatedBy\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete ShiftTemplate",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation DeleteShiftTemplate($shiftTemplateId: Int!) { deleteShiftTemplate(shiftTemplateId: $shiftTemplateId) { id shiftName startTime endTime order isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"shiftTemplateId\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}

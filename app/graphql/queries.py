@@ -1,13 +1,16 @@
 import strawberry
 from typing import List, Optional
+from datetime import date
 from app.models.user import User as UserModel
 from app.models.product_template import ProductTemplate as ProductTemplateModel
 from app.models.product import Product as ProductModel
+from app.models.shift_template import ShiftTemplate as ShiftTemplateModel
 from app.models.shift import Shift as ShiftModel
 from app.models.product_slot import ProductSlot as ProductSlotModel
 from app.schemas.user import UserType
 from app.schemas.product_template import ProductTemplateType
 from app.schemas.product import ProductType
+from app.schemas.shift_template import ShiftTemplateType
 from app.schemas.shift import ShiftType
 from app.schemas.product_slot import ProductSlotType
 from app.database import SessionLocal
@@ -110,42 +113,44 @@ class Query:
         return None
 
     @strawberry.field
-    def shifts(self) -> List[ShiftType]:
+    def shift_templates(self) -> List[ShiftTemplateType]:
         db = SessionLocal()
-        shifts = db.query(ShiftModel).all()
+        shift_templates = db.query(ShiftTemplateModel).all()
         db.close()
-        return [ShiftType(
-            id=shift.id,
-            shift_name=shift.shift_name,
-            start_time=shift.start_time,
-            end_time=shift.end_time,
-            is_active=shift.is_active,
-            deleted_at=shift.deleted_at,
-            deleted_by=shift.deleted_by,
-            created_at=shift.created_at,
-            created_by=shift.created_by,
-            updated_at=shift.updated_at,
-            updated_by=shift.updated_by
-        ) for shift in shifts]
+        return [ShiftTemplateType(
+            id=shift_template.id,
+            shift_name=shift_template.shift_name,
+            start_time=shift_template.start_time,
+            end_time=shift_template.end_time,
+            order=shift_template.order,
+            is_active=shift_template.is_active,
+            deleted_at=shift_template.deleted_at,
+            deleted_by=shift_template.deleted_by,
+            created_at=shift_template.created_at,
+            created_by=shift_template.created_by,
+            updated_at=shift_template.updated_at,
+            updated_by=shift_template.updated_by
+        ) for shift_template in shift_templates]
 
     @strawberry.field
-    def shift(self, shift_id: int) -> Optional[ShiftType]:
+    def shift_template(self, shift_template_id: int) -> Optional[ShiftTemplateType]:
         db = SessionLocal()
-        shift = db.query(ShiftModel).filter(ShiftModel.id == shift_id).first()
+        shift_template = db.query(ShiftTemplateModel).filter(ShiftTemplateModel.id == shift_template_id).first()
         db.close()
-        if shift:
-            return ShiftType(
-                id=shift.id,
-                shift_name=shift.shift_name,
-                start_time=shift.start_time,
-                end_time=shift.end_time,
-                is_active=shift.is_active,
-                deleted_at=shift.deleted_at,
-                deleted_by=shift.deleted_by,
-                created_at=shift.created_at,
-                created_by=shift.created_by,
-                updated_at=shift.updated_at,
-                updated_by=shift.updated_by
+        if shift_template:
+            return ShiftTemplateType(
+                id=shift_template.id,
+                shift_name=shift_template.shift_name,
+                start_time=shift_template.start_time,
+                end_time=shift_template.end_time,
+                order=shift_template.order,
+                is_active=shift_template.is_active,
+                deleted_at=shift_template.deleted_at,
+                deleted_by=shift_template.deleted_by,
+                created_at=shift_template.created_at,
+                created_by=shift_template.created_by,
+                updated_at=shift_template.updated_at,
+                updated_by=shift_template.updated_by
             )
         return None
 
@@ -184,5 +189,95 @@ class Query:
                 created_by=product_slot.created_by,
                 updated_at=product_slot.updated_at,
                 updated_by=product_slot.updated_by
+            )
+        return None
+
+    @strawberry.field
+    def shifts(
+        self,
+        shift_date: Optional[date] = None,
+        shift_template_id: Optional[int] = None,
+        status: Optional[str] = None
+    ) -> List[ShiftType]:
+        db = SessionLocal()
+        query = db.query(ShiftModel)
+        
+        if shift_date is not None:
+            query = query.filter(ShiftModel.shift_date == shift_date)
+        if shift_template_id is not None:
+            query = query.filter(ShiftModel.shift_template_id == shift_template_id)
+        if status is not None:
+            query = query.filter(ShiftModel.status == status)
+        
+        shifts = query.all()
+        db.close()
+        return [ShiftType(
+            id=shift.id,
+            shift_template_id=shift.shift_template_id,
+            shift_date=shift.shift_date,
+            actual_start_datetime=shift.actual_start_datetime,
+            actual_end_datetime=shift.actual_end_datetime,
+            started_by=shift.started_by,
+            ended_by=shift.ended_by,
+            status=shift.status,
+            is_active=shift.is_active,
+            deleted_at=shift.deleted_at,
+            deleted_by=shift.deleted_by,
+            created_at=shift.created_at,
+            created_by=shift.created_by,
+            updated_at=shift.updated_at,
+            updated_by=shift.updated_by
+        ) for shift in shifts]
+
+    @strawberry.field
+    def shift(self, shift_id: int) -> Optional[ShiftType]:
+        db = SessionLocal()
+        shift = db.query(ShiftModel).filter(ShiftModel.id == shift_id).first()
+        db.close()
+        if shift:
+            return ShiftType(
+                id=shift.id,
+                shift_template_id=shift.shift_template_id,
+                shift_date=shift.shift_date,
+                actual_start_datetime=shift.actual_start_datetime,
+                actual_end_datetime=shift.actual_end_datetime,
+                started_by=shift.started_by,
+                ended_by=shift.ended_by,
+                status=shift.status,
+                is_active=shift.is_active,
+                deleted_at=shift.deleted_at,
+                deleted_by=shift.deleted_by,
+                created_at=shift.created_at,
+                created_by=shift.created_by,
+                updated_at=shift.updated_at,
+                updated_by=shift.updated_by
+            )
+        return None
+
+    @strawberry.field
+    def active_shift(self, shift_template_id: int) -> Optional[ShiftType]:
+        db = SessionLocal()
+        shift = db.query(ShiftModel).filter(
+            ShiftModel.shift_template_id == shift_template_id,
+            ShiftModel.status == "active"
+        ).first()
+        db.close()
+        if shift:
+            return ShiftType(
+                id=shift.id,
+                shift_template_id=shift.shift_template_id,
+                shift_date=shift.shift_date,
+                actual_start_datetime=shift.actual_start_datetime,
+                actual_end_datetime=shift.actual_end_datetime,
+                started_by=shift.started_by,
+                ended_by=shift.ended_by,
+                status=shift.status,
+                is_active=shift.is_active,
+                deleted_at=shift.deleted_at,
+                deleted_by=shift.deleted_by,
+                created_at=shift.created_at,
+                created_by=shift.created_by,
+                updated_at=shift.updated_at,
+                updated_by=shift.updated_by
             )
         return None

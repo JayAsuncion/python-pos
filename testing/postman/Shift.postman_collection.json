@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "_postman_id": "c7d8e9f0-a1b2-3c4d-5e6f-1234567890ab",
     "name": "Shift",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "8267158"
@@ -19,8 +19,37 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "{ shifts { id shiftName startTime endTime isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "query": "{ shifts { id shiftTemplateId shiftDate actualStartDatetime actualEndDatetime startedBy endedBy status isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
             "variables": ""
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Shifts with Filters",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "query GetShifts($shiftDate: Date, $shiftTemplateId: Int, $status: String) { shifts(shiftDate: $shiftDate, shiftTemplateId: $shiftTemplateId, status: $status) { id shiftTemplateId shiftDate actualStartDatetime actualEndDatetime startedBy endedBy status isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"shiftDate\": \"2026-03-01\",\n  \"status\": \"active\"\n}"
           }
         },
         "url": {
@@ -48,7 +77,7 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "query GetShift($shiftId: Int!) { shift(shiftId: $shiftId) { id shiftName startTime endTime isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "query": "query GetShift($shiftId: Int!) { shift(shiftId: $shiftId) { id shiftTemplateId shiftDate actualStartDatetime actualEndDatetime startedBy endedBy status isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
             "variables": "{\n  \"shiftId\": 1\n}"
           }
         },
@@ -65,7 +94,7 @@
       "response": []
     },
     {
-      "name": "Create Shift",
+      "name": "Get Active Shift",
       "request": {
         "method": "POST",
         "header": [
@@ -77,8 +106,8 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "mutation CreateShift($shiftName: String!, $startTime: Time!, $endTime: Time!, $isActive: Boolean, $createdBy: Int) { createShift(shiftName: $shiftName, startTime: $startTime, endTime: $endTime, isActive: $isActive, createdBy: $createdBy) { id shiftName startTime endTime isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
-            "variables": "{\n  \"shiftName\": \"Shift A\",\n  \"startTime\": \"05:00:00+00:00\",\n  \"endTime\": \"13:00:00+00:00\",\n  \"isActive\": true,\n  \"createdBy\": 1\n}"
+            "query": "query GetActiveShift($shiftTemplateId: Int!) { activeShift(shiftTemplateId: $shiftTemplateId) { id shiftTemplateId shiftDate actualStartDatetime actualEndDatetime startedBy endedBy status isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"shiftTemplateId\": 1\n}"
           }
         },
         "url": {
@@ -94,7 +123,7 @@
       "response": []
     },
     {
-      "name": "Update Shift",
+      "name": "Start Shift",
       "request": {
         "method": "POST",
         "header": [
@@ -106,8 +135,8 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "mutation UpdateShift($shiftId: Int!, $shiftName: String, $startTime: Time, $endTime: Time, $isActive: Boolean, $updatedBy: Int) { updateShift(shiftId: $shiftId, shiftName: $shiftName, startTime: $startTime, endTime: $endTime, isActive: $isActive, updatedBy: $updatedBy) { id shiftName startTime endTime isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
-            "variables": "{\n  \"shiftId\": 1,\n  \"shiftName\": \"Morning Shift\",\n  \"startTime\": \"06:00:00+00:00\",\n  \"isActive\": true,\n  \"updatedBy\": 1\n}"
+            "query": "mutation StartShift($shiftTemplateId: Int!, $shiftDate: Date!, $userIds: [Int!]!, $startedBy: Int!, $readings: [StartReadingInput!]!, $createdBy: Int) { startShift(shiftTemplateId: $shiftTemplateId, shiftDate: $shiftDate, userIds: $userIds, startedBy: $startedBy, readings: $readings, createdBy: $createdBy) { id shiftTemplateId shiftDate actualStartDatetime actualEndDatetime startedBy endedBy status isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"shiftTemplateId\": 1,\n  \"shiftDate\": \"2026-03-01\",\n  \"userIds\": [1, 2],\n  \"startedBy\": 1,\n  \"readings\": [\n    {\n      \"productSlotId\": 1,\n      \"startReading\": 1000.0,\n      \"startReadingImageUrl\": \"https://s3.amazonaws.com/bucket/start-reading-1.jpg\"\n    },\n    {\n      \"productSlotId\": 2,\n      \"startReading\": 500.0,\n      \"startReadingImageUrl\": \"https://s3.amazonaws.com/bucket/start-reading-2.jpg\"\n    }\n  ],\n  \"createdBy\": 1\n}"
           }
         },
         "url": {
@@ -123,7 +152,7 @@
       "response": []
     },
     {
-      "name": "Delete Shift",
+      "name": "End Shift",
       "request": {
         "method": "POST",
         "header": [
@@ -135,8 +164,8 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "mutation DeleteShift($shiftId: Int!) { deleteShift(shiftId: $shiftId) { id shiftName startTime endTime isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
-            "variables": "{\n  \"shiftId\": 1\n}"
+            "query": "mutation EndShift($shiftId: Int!, $endedBy: Int!, $readings: [EndReadingInput!]!, $updatedBy: Int) { endShift(shiftId: $shiftId, endedBy: $endedBy, readings: $readings, updatedBy: $updatedBy) { id shiftTemplateId shiftDate actualStartDatetime actualEndDatetime startedBy endedBy status isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"shiftId\": 1,\n  \"endedBy\": 1,\n  \"readings\": [\n    {\n      \"productSlotId\": 1,\n      \"endReading\": 1250.5,\n      \"endReadingImageUrl\": \"https://s3.amazonaws.com/bucket/end-reading-1.jpg\"\n    },\n    {\n      \"productSlotId\": 2,\n      \"endReading\": 678.25,\n      \"endReadingImageUrl\": \"https://s3.amazonaws.com/bucket/end-reading-2.jpg\"\n    }\n  ],\n  \"updatedBy\": 1\n}"
           }
         },
         "url": {
@@ -158,7 +187,6 @@
       "script": {
         "type": "text/javascript",
         "packages": {},
-        "requests": {},
         "exec": [
           ""
         ]
@@ -169,7 +197,6 @@
       "script": {
         "type": "text/javascript",
         "packages": {},
-        "requests": {},
         "exec": [
           ""
         ]

@@ -1,17 +1,14 @@
 from typing import Optional
-from datetime import datetime, date
+from datetime import datetime, time
 import strawberry
 
 @strawberry.type
-class ShiftType:
+class ShiftTemplateType:
     id: int
-    shift_template_id: int
-    shift_date: date
-    actual_start_datetime: datetime
-    actual_end_datetime: Optional[datetime]
-    started_by: int
-    ended_by: Optional[int]
-    status: str
+    shift_name: str
+    start_time: time
+    end_time: time
+    order: int
     is_active: bool
     deleted_at: Optional[datetime]
     deleted_by: Optional[int]
