@@ -19,8 +19,16 @@ python-pos-fastapi-graphql-app
 │   └── graphql
 │       ├── __init__.py
 │       ├── schema.py
-│       ├── queries.py
-│       └── mutations.py
+│       ├── mutations/
+│       │   ├── __init__.py
+│       │   ├── user.py
+│       │   ├── product.py
+│       │   └── ... (entity-specific mutations)
+│       └── queries/
+│           ├── __init__.py
+│           ├── user.py
+│           ├── product.py
+│           └── ... (entity-specific queries)
 ├── alembic
 │   ├── versions
 │   └── env.py
@@ -55,7 +63,11 @@ python-pos-fastapi-graphql-app
 ## Usage Guidelines
 
 - The application uses SQLAlchemy for ORM, and you can define your database models in the `app/models` directory.
-- GraphQL queries and mutations are defined in the `app/graphql` directory.
+- GraphQL queries and mutations are organized by entity in the `app/graphql` directory:
+  - Each entity has its own mutations file in `app/graphql/mutations/{entity}.py`
+  - Each entity has its own queries file in `app/graphql/queries/{entity}.py`
+  - Mutations and queries are aggregated via class inheritance in `__init__.py` files
+  - This structure keeps files maintainable (50-150 lines each) and easy to navigate
 - Pydantic schemas for data validation and serialization can be found in the `app/schemas` directory.
 
 ## Dependencies

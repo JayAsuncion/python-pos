@@ -120,11 +120,73 @@ class EntityNameType:
    - Add `from .{entity} import *` to `app/models/__init__.py`
    - Add import to `alembic/env.py`: `from app.models.{entity} import EntityName`
 
-4. **Update GraphQL Files:**
-   - Add model and schema imports to `app/graphql/queries.py` and `app/graphql/mutations.py`
-   - Create query methods: `{entities}()` for list, `{entity}(entity_id)` for single record
-   - Create mutation methods: `create{Entity}()`, `update{Entity}()`, `delete{Entity}()`
-   - Follow existing patterns in these files for implementation details
+4. **Create Entity-Specific GraphQL Files:**
+   
+   **a) Create Mutations File** (`app/graphql/mutations/{entity}.py`):
+   ```python
+   import strawberry
+   from typing import Optional
+   from app.models.{entity} import EntityName as EntityModel
+   from app.schemas.{entity} import EntityNameType
+   from app.database import SessionLocal
+
+   @strawberry.type
+   class EntityNameMutations:
+       @strawberry.mutation(name="createEntityName")
+       def create_entity_name(self, field1: str, field2: int, ...) -> EntityNameType:
+           db = SessionLocal()
+           # Implementation
+           db.close()
+           return result
+       
+       @strawberry.mutation(name="updateEntityName")
+       def update_entity_name(self, entity_id: int, ...) -> Optional[EntityNameType]:
+           # Implementation
+           pass
+       
+       @strawberry.mutation(name="deleteEntityName")
+       def delete_entity_name(self, entity_id: int, deleted_by: int) -> Optional[EntityNameType]:
+           # Soft delete implementation
+           pass
+   ```
+   
+   **b) Create Queries File** (`app/graphql/queries/{entity}.py`):
+   ```python
+   import strawberry
+   from typing import List, Optional
+   from app.models.{entity} import EntityName as EntityModel
+   from app.schemas.{entity} import EntityNameType
+   from app.database import SessionLocal
+
+   @strawberry.type
+   class EntityNameQueries:
+       @strawberry.field
+       def entity_names(self) -> List[EntityNameType]:
+           db = SessionLocal()
+           # Implementation for list query
+           db.close()
+           return results
+       
+       @strawberry.field
+       def entity_name(self, entity_id: int) -> Optional[EntityNameType]:
+           db = SessionLocal()
+           # Implementation for single entity query
+           db.close()
+           return result
+   ```
+   
+   **c) Update Aggregator Files:**
+   - Add import to `app/graphql/mutations/__init__.py`:
+     ```python
+     from .{entity} import EntityNameMutations
+     ```
+     And add `EntityNameMutations` to the `Mutation` class inheritance list
+   
+   - Add import to `app/graphql/queries/__init__.py`:
+     ```python
+     from .{entity} import EntityNameQueries
+     ```
+     And add `EntityNameQueries` to the `Query` class inheritance list
 
 5. **Generate & Apply Migration:**
    ```bash
@@ -159,9 +221,28 @@ class EntityNameType:
 - Python fields: snake_case (e.g., `slot_name`)
 - GraphQL fields: camelCase (e.g., `slotName`)
 - GraphQL types: PascalCase with "Type" suffix (e.g., `ProductSlotType`)
+- GraphQL class names: PascalCase with "Mutations" or "Queries" suffix (e.g., `ProductSlotMutations`, `ProductSlotQueries`)
 - Query names: camelCase, plural/singular (e.g., `productSlots`, `productSlot`)
 - Mutation names: camelCase with verb prefix (e.g., `createProductSlot`)
 - Parameter names in queries: entity_name + "_id" (e.g., `product_slot_id`)
+- File names: snake_case matching entity name (e.g., `product_slot.py`)
+
+## GraphQL Organization (Entity-Based Structure)
+The GraphQL layer is organized by entity for better maintainability:
+
+- **Mutations**: Each entity has its own file in `app/graphql/mutations/{entity}.py`
+  - Contains a single class `{Entity}Mutations` with all mutations for that entity
+  - Aggregated in `app/graphql/mutations/__init__.py` via class inheritance
+  
+- **Queries**: Each entity has its own file in `app/graphql/queries/{entity}.py`
+  - Contains a single class `{Entity}Queries` with all queries for that entity
+  - Aggregated in `app/graphql/queries/__init__.py` via class inheritance
+
+**Benefits:**
+- Files are 50-150 lines (manageable)
+- Easy to locate entity-specific logic
+- Better for team collaboration (fewer merge conflicts)
+- Consistent with models/ and schemas/ structure
 
 ## Key Learnings
 - Always use `multi_replace_string_in_file` for multiple independent edits
@@ -169,3 +250,4 @@ class EntityNameType:
 - Always close database sessions with `db.close()`
 - Update mutations must handle `updated_by` even when not in conditional checks
 - Postman collection needs unique `_postman_id` for each collection
+- Each entity gets its own mutations and queries file for better organization
