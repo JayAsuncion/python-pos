@@ -15,50 +15,131 @@ Create a new entity for the specified name with all necessary components followi
 
 If any of these details are missing, ask the user before proceeding.
 
-Requirements:
-1. Create the SQLAlchemy model in `app/models/` with:
-   - All specified fields with appropriate data types
-   - Standard audit fields: `is_active`, `deleted_at`, `deleted_by`, `created_at`, `created_by`, `updated_at`, `updated_by`
-   - Use `PG_TIMESTAMP(timezone=True)` for timestamp fields
-   - Use `Time(timezone=True)` for time-only fields to store UTC values
-   - Use proper imports from sqlalchemy and app.database
+## Code Patterns (Use these directly without reading existing files)
 
-2. Create the Strawberry GraphQL schema in `app/schemas/` with:
-   - All model fields properly typed
+### 1. SQLAlchemy Model Pattern (`app/models/{entity}.py`)
+```python
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Numeric
+from sqlalchemy.sql import func
+from sqlalchemy.dialects.postgresql import TIMESTAMP as PG_TIMESTAMP
+from sqlalchemy.orm import relationship
+from app.database import Base
+
+class EntityName(Base):
+    __tablename__ = "entity_name"
+
+    id = Column(Integer, primary_key=True, index=True)
+    # Add entity-specific fields here
+    field_name = Column(String, nullable=False)
+    foreign_key_id = Column(Integer, ForeignKey("other_table.id"), nullable=True)
+    
+    # Standard audit fields (always include these)
+    is_active = Column(Boolean, default=True)
+    deleted_at = Column(PG_TIMESTAMP(timezone=True), nullable=True)
+    deleted_by = Column(Integer, nullable=True)
+    created_at = Column(PG_TIMESTAMP(timezone=True), server_default=func.now(), nullable=False)
+    created_by = Column(Integer, nullable=True)
+    updated_at = Column(PG_TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    updated_by = Column(Integer, nullable=True)
+
+    # Relationships (if applicable)
+    related_entity = relationship("RelatedEntity", backref="entity_names")
+```
+
+**Data Type Mappings:**
+- String fields → `Column(String, nullable=False/True)`
+- Integer fields → `Column(Integer, nullable=False/True)`
+- Decimal/Money → `Column(Numeric(15, 6), nullable=False/True)`
+- Boolean → `Column(Boolean, default=True)`
+- Foreign keys → `Column(Integer, ForeignKey("table.id"), nullable=False/True)`
+- Timestamps → `Column(PG_TIMESTAMP(timezone=True), nullable=True)`
+- Time only → `Column(Time(timezone=True), nullable=True)` (import Time from sqlalchemy)
+
+### 2. Strawberry Schema Pattern (`app/schemas/{entity}.py`)
+```python
+from typing import Optional
+from datetime import datetime
+import strawberry
+
+@strawberry.type
+class EntityNameType:
+    id: int
+    # Add entity-specific fields (use camelCase in GraphQL, but field names match model)
+    field_name: str
+    foreign_key_id: Optional[int]
+    
+    # Standard audit fields (always include these)
+    is_active: bool
+    deleted_at: Optional[datetime]
+    deleted_by: Optional[int]
+    created_at: datetime
+    created_by: Optional[int]
+    updated_at: datetime
+    updated_by: Optional[int]
+```
+
+**GraphQL Type Mappings:**
+- String → `str`
+- Integer → `int`
+- Numeric/Decimal → `float` (convert in queries/mutations with `float()`)
+- Boolean → `bool`
+- Optional fields → `Optional[type]`
+- Timestamps → `datetime` or `Optional[datetime]`
+
+**Note:** Use snake_case for field names in Python model, but camelCase in GraphQL queries/mutations.
+
+## Implementation Steps
+
+1. **Create Model File** (`app/models/{entity}.py`)
+   - Follow the SQLAlchemy model pattern above
+   - Include all standard audit fields
+
+2. **Create Schema File** (`app/schemas/{entity}.py`)
+   - Follow the Strawberry schema pattern above
    - Use Optional for nullable fields
-   - Import appropriate types from strawberry, typing, and datetime
 
-3. Update import files:
-   - Add model import to `app/models/__init__.py`
-   - Add model import to `alembic/env.py` for migration discovery
+3. **Update Import Files:**
+   - Add `from .{entity} import *` to `app/models/__init__.py`
+   - Add import to `alembic/env.py`: `from app.models.{entity} import EntityName`
 
-4. Generate and apply database migration:
-   - Activate virtual environment: `source python-pos-env-39/Scripts/activate`
-   - Set PYTHONPATH: Either `export $(grep -v '^#' .env | xargs)` or use `PYTHONPATH=.` prefix
-   - Run alembic autogenerate: `alembic revision --autogenerate -m "create_{entity}_table"`
-   - Apply migration: `alembic upgrade head`
-   - Refer to alembic.md for proper environment setup and avoid module import errors
+4. **Update GraphQL Files:**
+   - Add model and schema imports to `app/graphql/queries.py` and `app/graphql/mutations.py`
+   - Create query methods: `{entities}()` for list, `{entity}(entity_id)` for single record
+   - Create mutation methods: `create{Entity}()`, `update{Entity}()`, `delete{Entity}()`
+   - Follow existing patterns in these files for implementation details
 
-5. Create GraphQL queries in `app/graphql/queries.py`:
-   - `{entities}` - Get list of all records
-   - `{entity}` - Get single record by ID
-   - Add necessary imports for model and schema
+5. **Generate & Apply Migration:**
+   ```bash
+   source python-pos-env-39/Scripts/activate
+   export $(grep -v '^#' .env | xargs)
+   alembic revision --autogenerate -m "create_{entity}_table"
+   alembic upgrade head
+   ```
 
-6. Create GraphQL mutations in `app/graphql/mutations.py`:
-   - `create{Entity}` - Create new record
-   - `update{Entity}` - Update existing record
-   - `delete{Entity}` - Delete record (hard delete)
-   - Add necessary imports for model and schema
-   - Handle optional parameters properly
-   - Always update `updated_by` when provided in update mutation
-
-7. Create Postman collection in `testing/postman/`:
-   - Follow existing collection format
-   - Include all 5 requests: Get All, Get By ID, Create, Update, Delete
-   - Use GraphQL queries/mutations with proper variables
-   - Include sample data in variables section
+6. **Create Postman Collection** (`testing/postman/{Entity Name}.postman_collection.json`)
+   - Follow existing collection patterns with all 5 requests: Get All, Get By ID, Create, Update, Delete
    - Use `{{baseURL}}/graphql` endpoint
 
-8. Restart the service to apply changes (docker-compose restart web)
+7. **Restart Service:**
+   ```bash
+   docker-compose restart web
+   ```
 
-Ensure all components follow the existing code patterns in the project, including naming conventions, field types, and GraphQL query/mutation structures.
+8. **Verify:** Check for errors with `get_errors` tool
+
+## Naming Conventions
+- Model class: PascalCase (e.g., `ProductSlot`)
+- Table name: snake_case (e.g., `product_slot`)
+- Python fields: snake_case (e.g., `slot_name`)
+- GraphQL fields: camelCase (e.g., `slotName`)
+- GraphQL types: PascalCase with "Type" suffix (e.g., `ProductSlotType`)
+- Query names: camelCase, plural/singular (e.g., `productSlots`, `productSlot`)
+- Mutation names: camelCase with verb prefix (e.g., `createProductSlot`)
+- Parameter names in queries: entity_name + "_id" (e.g., `product_slot_id`)
+
+## Key Learnings
+- Always use `multi_replace_string_in_file` for multiple independent edits
+- Field mappings: Numeric columns convert to float in GraphQL with `float(value)`
+- Always close database sessions with `db.close()`
+- Update mutations must handle `updated_by` even when not in conditional checks
+- Postman collection needs unique `_postman_id` for each collection
