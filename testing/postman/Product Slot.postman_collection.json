@@ -1,0 +1,179 @@
+{
+  "info": {
+    "_postman_id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+    "name": "Product Slot",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "8267158"
+  },
+  "item": [
+    {
+      "name": "Get All Product Slots",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "{ productSlots { id slotName productId isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": ""
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Product Slot by ID",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "query GetProductSlot($productSlotId: Int!) { productSlot(productSlotId: $productSlotId) { id slotName productId isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"productSlotId\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Product Slot",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation CreateProductSlot($slotName: String!, $productId: Int, $isActive: Boolean, $createdBy: Int) { createProductSlot(slotName: $slotName, productId: $productId, isActive: $isActive, createdBy: $createdBy) { id slotName productId isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"slotName\": \"Slot A1\",\n  \"productId\": 1,\n  \"isActive\": true,\n  \"createdBy\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Product Slot",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation UpdateProductSlot($productSlotId: Int!, $slotName: String, $productId: Int, $isActive: Boolean, $updatedBy: Int) { updateProductSlot(productSlotId: $productSlotId, slotName: $slotName, productId: $productId, isActive: $isActive, updatedBy: $updatedBy) { id slotName productId isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"productSlotId\": 1,\n  \"slotName\": \"Slot A2\",\n  \"productId\": 2,\n  \"isActive\": true,\n  \"updatedBy\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Product Slot",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation DeleteProductSlot($productSlotId: Int!) { deleteProductSlot(productSlotId: $productSlotId) { id slotName productId isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"productSlotId\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}

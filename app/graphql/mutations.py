@@ -5,10 +5,12 @@ from app.models.user import User as UserModel
 from app.models.product_template import ProductTemplate as ProductTemplateModel
 from app.models.product import Product as ProductModel
 from app.models.shift import Shift as ShiftModel
+from app.models.product_slot import ProductSlot as ProductSlotModel
 from app.schemas.user import UserType
 from app.schemas.product_template import ProductTemplateType
 from app.schemas.product import ProductType
 from app.schemas.shift import ShiftType
+from app.schemas.product_slot import ProductSlotType
 from app.database import SessionLocal
 
 @strawberry.type
@@ -477,6 +479,114 @@ class Mutation:
                 updated_by=db_shift.updated_by
             )
             db.delete(db_shift)
+            db.commit()
+        else:
+            result = None
+        db.close()
+        return result
+
+    @strawberry.mutation(name="createProductSlot")
+    def create_product_slot(
+        self,
+        slot_name: str,
+        product_id: Optional[int] = None,
+        is_active: bool = True,
+        deleted_at: Optional[datetime] = None,
+        deleted_by: Optional[int] = None,
+        created_by: Optional[int] = None
+    ) -> ProductSlotType:
+        db = SessionLocal()
+        db_product_slot = ProductSlotModel(
+            slot_name=slot_name,
+            product_id=product_id,
+            is_active=is_active,
+            deleted_at=deleted_at,
+            deleted_by=deleted_by,
+            created_by=created_by
+        )
+        db.add(db_product_slot)
+        db.commit()
+        db.refresh(db_product_slot)
+        result = ProductSlotType(
+            id=db_product_slot.id,
+            slot_name=db_product_slot.slot_name,
+            product_id=db_product_slot.product_id,
+            is_active=db_product_slot.is_active,
+            deleted_at=db_product_slot.deleted_at,
+            deleted_by=db_product_slot.deleted_by,
+            created_at=db_product_slot.created_at,
+            created_by=db_product_slot.created_by,
+            updated_at=db_product_slot.updated_at,
+            updated_by=db_product_slot.updated_by
+        )
+        db.close()
+        return result
+
+    @strawberry.mutation(name="updateProductSlot")
+    def update_product_slot(
+        self,
+        product_slot_id: int,
+        slot_name: Optional[str] = None,
+        product_id: Optional[int] = None,
+        is_active: Optional[bool] = None,
+        deleted_at: Optional[datetime] = None,
+        deleted_by: Optional[int] = None,
+        updated_by: Optional[int] = None
+    ) -> Optional[ProductSlotType]:
+        db = SessionLocal()
+        db_product_slot = db.query(ProductSlotModel).filter(ProductSlotModel.id == product_slot_id).first()
+        if db_product_slot:
+            if slot_name is not None:
+                db_product_slot.slot_name = slot_name
+            if product_id is not None:
+                db_product_slot.product_id = product_id
+            if is_active is not None:
+                db_product_slot.is_active = is_active
+            if deleted_at is not None:
+                db_product_slot.deleted_at = deleted_at
+            if deleted_by is not None:
+                db_product_slot.deleted_by = deleted_by
+            
+            # Always update updated_by when provided
+            db_product_slot.updated_by = updated_by
+            
+            db.commit()
+            db.refresh(db_product_slot)
+            result = ProductSlotType(
+                id=db_product_slot.id,
+                slot_name=db_product_slot.slot_name,
+                product_id=db_product_slot.product_id,
+                is_active=db_product_slot.is_active,
+                deleted_at=db_product_slot.deleted_at,
+                deleted_by=db_product_slot.deleted_by,
+                created_at=db_product_slot.created_at,
+                created_by=db_product_slot.created_by,
+                updated_at=db_product_slot.updated_at,
+                updated_by=db_product_slot.updated_by
+            )
+        else:
+            result = None
+        db.close()
+        return result
+
+    @strawberry.mutation(name="deleteProductSlot")
+    def delete_product_slot(self, product_slot_id: int) -> Optional[ProductSlotType]:
+        db = SessionLocal()
+        db_product_slot = db.query(ProductSlotModel).filter(ProductSlotModel.id == product_slot_id).first()
+        if db_product_slot:
+            result = ProductSlotType(
+                id=db_product_slot.id,
+                slot_name=db_product_slot.slot_name,
+                product_id=db_product_slot.product_id,
+                is_active=db_product_slot.is_active,
+                deleted_at=db_product_slot.deleted_at,
+                deleted_by=db_product_slot.deleted_by,
+                created_at=db_product_slot.created_at,
+                created_by=db_product_slot.created_by,
+                updated_at=db_product_slot.updated_at,
+                updated_by=db_product_slot.updated_by
+            )
+            db.delete(db_product_slot)
             db.commit()
         else:
             result = None

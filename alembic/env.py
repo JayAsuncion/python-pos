@@ -11,6 +11,8 @@ from app.database import Base
 from app.models.product_template import ProductTemplate
 from app.models.user import User
 from app.models.shift import Shift
+from app.models.product import Product
+from app.models.product_slot import ProductSlot
 
 config = context.config
 
