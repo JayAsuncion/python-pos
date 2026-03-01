@@ -1,4 +1,4 @@
-## Create new table
+## How to create a new table, schema, queries, mutation, and graphQL endpoint for an entity?
 1. Create the model in [app/models](./app/models).
 1. Import the model in [alembic/env.py](./alembic/env.py) to allow alembic discovery.
 1. Import the model in [app/models/__init__.py](./app/models/__init__.py) to allow `package import` like `from app.models import User`, instead of `direct import` like `from app.models.user import User` similar to `index.ts` of Typescript. **(Optional)**
