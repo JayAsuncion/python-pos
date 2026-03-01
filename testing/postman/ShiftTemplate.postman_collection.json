@@ -135,8 +135,8 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "mutation DeleteShiftTemplate($shiftTemplateId: Int!) { deleteShiftTemplate(shiftTemplateId: $shiftTemplateId) { id shiftName startTime endTime order isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
-            "variables": "{\n  \"shiftTemplateId\": 1\n}"
+            "query": "mutation DeleteShiftTemplate($shiftTemplateId: Int!, $deletedBy: Int!) { deleteShiftTemplate(shiftTemplateId: $shiftTemplateId, deletedBy: $deletedBy) { id shiftName startTime endTime order isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"shiftTemplateId\": 1,\n  \"deletedBy\": 1\n}"
           }
         },
         "url": {

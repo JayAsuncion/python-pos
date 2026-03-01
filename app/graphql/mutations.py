@@ -184,10 +184,56 @@ class Mutation:
         return result
 
     @strawberry.mutation(name="deleteProductTemplate")
-    def delete_product_template(self, product_id: int) -> Optional[ProductTemplateType]:
+    def delete_product_template(self, product_id: int, deleted_by: int) -> Optional[ProductTemplateType]:
         db = SessionLocal()
         db_product = db.query(ProductTemplateModel).filter(ProductTemplateModel.id == product_id).first()
         if db_product:
+            # Cascading soft delete: Delete all related child records first
+            
+            # 1. Get all products for this template
+            products = db.query(ProductModel).filter(
+                ProductModel.product_template_id == product_id,
+                ProductModel.deleted_at.is_(None)
+            ).all()
+            
+            for product in products:
+                # 1a. Soft delete ProductSlotReadings for this product
+                product_readings = db.query(ProductSlotReadingModel).filter(
+                    ProductSlotReadingModel.product_id == product.id,
+                    ProductSlotReadingModel.deleted_at.is_(None)
+                ).all()
+                for reading in product_readings:
+                    reading.deleted_at = func.now()
+                    reading.deleted_by = deleted_by
+                
+                # 1b. Soft delete ProductSlots for this product
+                product_slots = db.query(ProductSlotModel).filter(
+                    ProductSlotModel.product_id == product.id,
+                    ProductSlotModel.deleted_at.is_(None)
+                ).all()
+                for slot in product_slots:
+                    # Soft delete ProductSlotReadings for this slot
+                    slot_readings = db.query(ProductSlotReadingModel).filter(
+                        ProductSlotReadingModel.product_slot_id == slot.id,
+                        ProductSlotReadingModel.deleted_at.is_(None)
+                    ).all()
+                    for reading in slot_readings:
+                        reading.deleted_at = func.now()
+                        reading.deleted_by = deleted_by
+                    
+                    slot.deleted_at = func.now()
+                    slot.deleted_by = deleted_by
+                
+                # 1c. Soft delete the product
+                product.deleted_at = func.now()
+                product.deleted_by = deleted_by
+            
+            # 2. Soft delete the product template itself
+            db_product.deleted_at = func.now()
+            db_product.deleted_by = deleted_by
+            
+            db.commit()
+            db.refresh(db_product)
             result = ProductTemplateType(
                 id=db_product.id,
                 name=db_product.name,
@@ -197,8 +243,6 @@ class Mutation:
                 deleted_at=db_product.deleted_at,
                 deleted_by=db_product.deleted_by
             )
-            db.delete(db_product)
-            db.commit()
         else:
             result = None
         db.close()
@@ -347,10 +391,45 @@ class Mutation:
         return result
 
     @strawberry.mutation(name="deleteProduct")
-    def delete_product(self, product_id: int) -> Optional[ProductType]:
+    def delete_product(self, product_id: int, deleted_by: int) -> Optional[ProductType]:
         db = SessionLocal()
         db_product = db.query(ProductModel).filter(ProductModel.id == product_id).first()
         if db_product:
+            # Cascading soft delete: Delete all related child records first
+            
+            # 1. Soft delete ProductSlotReadings for this product
+            product_readings = db.query(ProductSlotReadingModel).filter(
+                ProductSlotReadingModel.product_id == product_id,
+                ProductSlotReadingModel.deleted_at.is_(None)
+            ).all()
+            for reading in product_readings:
+                reading.deleted_at = func.now()
+                reading.deleted_by = deleted_by
+            
+            # 2. Soft delete ProductSlots for this product
+            product_slots = db.query(ProductSlotModel).filter(
+                ProductSlotModel.product_id == product_id,
+                ProductSlotModel.deleted_at.is_(None)
+            ).all()
+            for slot in product_slots:
+                # Soft delete ProductSlotReadings for this slot
+                slot_readings = db.query(ProductSlotReadingModel).filter(
+                    ProductSlotReadingModel.product_slot_id == slot.id,
+                    ProductSlotReadingModel.deleted_at.is_(None)
+                ).all()
+                for reading in slot_readings:
+                    reading.deleted_at = func.now()
+                    reading.deleted_by = deleted_by
+                
+                slot.deleted_at = func.now()
+                slot.deleted_by = deleted_by
+            
+            # 3. Soft delete the product itself
+            db_product.deleted_at = func.now()
+            db_product.deleted_by = deleted_by
+            
+            db.commit()
+            db.refresh(db_product)
             result = ProductType(
                 id=db_product.id,
                 product_template_id=db_product.product_template_id,
@@ -369,8 +448,6 @@ class Mutation:
                 updated_at=db_product.updated_at,
                 updated_by=db_product.updated_by
             )
-            db.delete(db_product)
-            db.commit()
         else:
             result = None
         db.close()
@@ -475,10 +552,47 @@ class Mutation:
         return result
 
     @strawberry.mutation(name="deleteShiftTemplate")
-    def delete_shift_template(self, shift_template_id: int) -> Optional[ShiftTemplateType]:
+    def delete_shift_template(self, shift_template_id: int, deleted_by: int) -> Optional[ShiftTemplateType]:
         db = SessionLocal()
         db_shift_template = db.query(ShiftTemplateModel).filter(ShiftTemplateModel.id == shift_template_id).first()
         if db_shift_template:
+            # Cascading soft delete: Delete all related child records first
+            
+            # 1. Get all shifts for this template
+            shifts = db.query(ShiftModel).filter(
+                ShiftModel.shift_template_id == shift_template_id,
+                ShiftModel.deleted_at.is_(None)
+            ).all()
+            
+            for shift in shifts:
+                # 1a. Soft delete all ShiftUser records for this shift
+                shift_users = db.query(ShiftUserModel).filter(
+                    ShiftUserModel.shift_id == shift.id,
+                    ShiftUserModel.deleted_at.is_(None)
+                ).all()
+                for shift_user in shift_users:
+                    shift_user.deleted_at = func.now()
+                    shift_user.deleted_by = deleted_by
+                
+                # 1b. Soft delete all ProductSlotReading records for this shift
+                readings = db.query(ProductSlotReadingModel).filter(
+                    ProductSlotReadingModel.shift_id == shift.id,
+                    ProductSlotReadingModel.deleted_at.is_(None)
+                ).all()
+                for reading in readings:
+                    reading.deleted_at = func.now()
+                    reading.deleted_by = deleted_by
+                
+                # 1c. Soft delete the shift
+                shift.deleted_at = func.now()
+                shift.deleted_by = deleted_by
+            
+            # 2. Soft delete the shift template itself
+            db_shift_template.deleted_at = func.now()
+            db_shift_template.deleted_by = deleted_by
+            
+            db.commit()
+            db.refresh(db_shift_template)
             result = ShiftTemplateType(
                 id=db_shift_template.id,
                 shift_name=db_shift_template.shift_name,
@@ -493,8 +607,6 @@ class Mutation:
                 updated_at=db_shift_template.updated_at,
                 updated_by=db_shift_template.updated_by
             )
-            db.delete(db_shift_template)
-            db.commit()
         else:
             result = None
         db.close()
@@ -585,10 +697,27 @@ class Mutation:
         return result
 
     @strawberry.mutation(name="deleteProductSlot")
-    def delete_product_slot(self, product_slot_id: int) -> Optional[ProductSlotType]:
+    def delete_product_slot(self, product_slot_id: int, deleted_by: int) -> Optional[ProductSlotType]:
         db = SessionLocal()
         db_product_slot = db.query(ProductSlotModel).filter(ProductSlotModel.id == product_slot_id).first()
         if db_product_slot:
+            # Cascading soft delete: Delete all related child records first
+            
+            # 1. Soft delete all ProductSlotReading records for this slot
+            readings = db.query(ProductSlotReadingModel).filter(
+                ProductSlotReadingModel.product_slot_id == product_slot_id,
+                ProductSlotReadingModel.deleted_at.is_(None)
+            ).all()
+            for reading in readings:
+                reading.deleted_at = func.now()
+                reading.deleted_by = deleted_by
+            
+            # 2. Soft delete the product slot itself
+            db_product_slot.deleted_at = func.now()
+            db_product_slot.deleted_by = deleted_by
+            
+            db.commit()
+            db.refresh(db_product_slot)
             result = ProductSlotType(
                 id=db_product_slot.id,
                 slot_name=db_product_slot.slot_name,
@@ -601,8 +730,6 @@ class Mutation:
                 updated_at=db_product_slot.updated_at,
                 updated_by=db_product_slot.updated_by
             )
-            db.delete(db_product_slot)
-            db.commit()
         else:
             result = None
         db.close()
@@ -781,5 +908,134 @@ class Mutation:
             updated_at=db_shift.updated_at,
             updated_by=db_shift.updated_by
         )
+        db.close()
+        return result
+    
+    @strawberry.mutation(name="deleteShift")
+    def delete_shift(self, shift_id: int, deleted_by: int) -> Optional[ShiftType]:
+        db = SessionLocal()
+        db_shift = db.query(ShiftModel).filter(ShiftModel.id == shift_id).first()
+        if db_shift:
+            # Cascading soft delete: Delete all related child records first
+            
+            # 1. Soft delete all ShiftUser records for this shift
+            shift_users = db.query(ShiftUserModel).filter(
+                ShiftUserModel.shift_id == shift_id,
+                ShiftUserModel.deleted_at.is_(None)
+            ).all()
+            for shift_user in shift_users:
+                shift_user.deleted_at = func.now()
+                shift_user.deleted_by = deleted_by
+            
+            # 2. Soft delete all ProductSlotReading records for this shift
+            readings = db.query(ProductSlotReadingModel).filter(
+                ProductSlotReadingModel.shift_id == shift_id,
+                ProductSlotReadingModel.deleted_at.is_(None)
+            ).all()
+            for reading in readings:
+                reading.deleted_at = func.now()
+                reading.deleted_by = deleted_by
+            
+            # 3. Soft delete the shift itself
+            db_shift.deleted_at = func.now()
+            db_shift.deleted_by = deleted_by
+            
+            db.commit()
+            db.refresh(db_shift)
+            result = ShiftType(
+                id=db_shift.id,
+                shift_template_id=db_shift.shift_template_id,
+                shift_date=db_shift.shift_date,
+                actual_start_datetime=db_shift.actual_start_datetime,
+                actual_end_datetime=db_shift.actual_end_datetime,
+                started_by=db_shift.started_by,
+                ended_by=db_shift.ended_by,
+                status=db_shift.status,
+                is_active=db_shift.is_active,
+                deleted_at=db_shift.deleted_at,
+                deleted_by=db_shift.deleted_by,
+                created_at=db_shift.created_at,
+                created_by=db_shift.created_by,
+                updated_at=db_shift.updated_at,
+                updated_by=db_shift.updated_by
+            )
+        else:
+            result = None
+        db.close()
+        return result
+    
+    @strawberry.mutation(name="deleteShiftUser")
+    def delete_shift_user(self, shift_user_id: int, deleted_by: int) -> Optional[ShiftUserType]:
+        db = SessionLocal()
+        db_shift_user = db.query(ShiftUserModel).filter(ShiftUserModel.id == shift_user_id).first()
+        if db_shift_user:
+            # Soft delete
+            db_shift_user.deleted_at = func.now()
+            db_shift_user.deleted_by = deleted_by
+            db.commit()
+            db.refresh(db_shift_user)
+            result = ShiftUserType(
+                id=db_shift_user.id,
+                shift_id=db_shift_user.shift_id,
+                user_id=db_shift_user.user_id,
+                deleted_at=db_shift_user.deleted_at,
+                deleted_by=db_shift_user.deleted_by,
+                created_at=db_shift_user.created_at,
+                created_by=db_shift_user.created_by,
+                updated_at=db_shift_user.updated_at,
+                updated_by=db_shift_user.updated_by
+            )
+        else:
+            result = None
+        db.close()
+        return result
+    
+    @strawberry.mutation(name="deleteProductSlotReading")
+    def delete_product_slot_reading(self, product_slot_reading_id: int, deleted_by: int) -> Optional[ProductSlotReadingType]:
+        db = SessionLocal()
+        db_reading = db.query(ProductSlotReadingModel).filter(ProductSlotReadingModel.id == product_slot_reading_id).first()
+        if db_reading:
+            # Soft delete
+            db_reading.deleted_at = func.now()
+            db_reading.deleted_by = deleted_by
+            db.commit()
+            db.refresh(db_reading)
+            
+            # Calculate computed properties
+            quantity_sold = None
+            if db_reading.end_reading is not None and db_reading.start_reading is not None:
+                quantity_sold = float(db_reading.end_reading) - float(db_reading.start_reading)
+            
+            revenue_amount = None
+            if quantity_sold is not None:
+                revenue_amount = quantity_sold * float(db_reading.selling_price_snapshot)
+            
+            cost_amount = None
+            if quantity_sold is not None:
+                cost_amount = quantity_sold * float(db_reading.cost_price_snapshot)
+            
+            result = ProductSlotReadingType(
+                id=db_reading.id,
+                shift_id=db_reading.shift_id,
+                product_slot_id=db_reading.product_slot_id,
+                product_id=db_reading.product_id,
+                start_reading=float(db_reading.start_reading),
+                end_reading=float(db_reading.end_reading) if db_reading.end_reading is not None else None,
+                start_reading_image_url=db_reading.start_reading_image_url,
+                end_reading_image_url=db_reading.end_reading_image_url,
+                cost_price_snapshot=float(db_reading.cost_price_snapshot),
+                selling_price_snapshot=float(db_reading.selling_price_snapshot),
+                quantity_sold=quantity_sold,
+                revenue_amount=revenue_amount,
+                cost_amount=cost_amount,
+                deleted_at=db_reading.deleted_at,
+                deleted_by=db_reading.deleted_by,
+                created_at=db_reading.created_at,
+                created_by=db_reading.created_by,
+                updated_at=db_reading.updated_at,
+                updated_by=db_reading.updated_by
+            )
+        else:
+            result = None
         db.close()
         return result

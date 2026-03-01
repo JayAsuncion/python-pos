@@ -1,0 +1,61 @@
+{
+  "info": {
+    "_postman_id": "e9f0a1b2-c3d4-5e6f-7a8b-901234567890",
+    "name": "ProductSlotReading",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "8267158"
+  },
+  "item": [
+    {
+      "name": "Delete ProductSlotReading",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation DeleteProductSlotReading($productSlotReadingId: Int!, $deletedBy: Int!) { deleteProductSlotReading(productSlotReadingId: $productSlotReadingId, deletedBy: $deletedBy) { id shiftId productSlotId productId startReading endReading startReadingImageUrl endReadingImageUrl costPriceSnapshot sellingPriceSnapshot quantitySold revenueAmount costAmount deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"productSlotReadingId\": 1,\n  \"deletedBy\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}

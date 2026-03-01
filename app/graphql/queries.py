@@ -33,7 +33,7 @@ class Query:
     @strawberry.field
     def product_templates(self) -> List[ProductTemplateType]:
         db = SessionLocal()
-        products = db.query(ProductTemplateModel).all()
+        products = db.query(ProductTemplateModel).filter(ProductTemplateModel.deleted_at.is_(None)).all()
         db.close()
         return [ProductTemplateType(
             id=product.id,
@@ -48,7 +48,10 @@ class Query:
     @strawberry.field
     def product_template(self, product_id: int) -> Optional[ProductTemplateType]:
         db = SessionLocal()
-        product = db.query(ProductTemplateModel).filter(ProductTemplateModel.id == product_id).first()
+        product = db.query(ProductTemplateModel).filter(
+            ProductTemplateModel.id == product_id,
+            ProductTemplateModel.deleted_at.is_(None)
+        ).first()
         db.close()
         if product:
             return ProductTemplateType(
@@ -65,7 +68,7 @@ class Query:
     @strawberry.field
     def products(self) -> List[ProductType]:
         db = SessionLocal()
-        products = db.query(ProductModel).all()
+        products = db.query(ProductModel).filter(ProductModel.deleted_at.is_(None)).all()
         db.close()
         return [ProductType(
             id=product.id,
@@ -89,7 +92,10 @@ class Query:
     @strawberry.field
     def product(self, product_id: int) -> Optional[ProductType]:
         db = SessionLocal()
-        product = db.query(ProductModel).filter(ProductModel.id == product_id).first()
+        product = db.query(ProductModel).filter(
+            ProductModel.id == product_id,
+            ProductModel.deleted_at.is_(None)
+        ).first()
         db.close()
         if product:
             return ProductType(
@@ -115,7 +121,7 @@ class Query:
     @strawberry.field
     def shift_templates(self) -> List[ShiftTemplateType]:
         db = SessionLocal()
-        shift_templates = db.query(ShiftTemplateModel).all()
+        shift_templates = db.query(ShiftTemplateModel).filter(ShiftTemplateModel.deleted_at.is_(None)).all()
         db.close()
         return [ShiftTemplateType(
             id=shift_template.id,
@@ -135,7 +141,10 @@ class Query:
     @strawberry.field
     def shift_template(self, shift_template_id: int) -> Optional[ShiftTemplateType]:
         db = SessionLocal()
-        shift_template = db.query(ShiftTemplateModel).filter(ShiftTemplateModel.id == shift_template_id).first()
+        shift_template = db.query(ShiftTemplateModel).filter(
+            ShiftTemplateModel.id == shift_template_id,
+            ShiftTemplateModel.deleted_at.is_(None)
+        ).first()
         db.close()
         if shift_template:
             return ShiftTemplateType(
@@ -157,7 +166,7 @@ class Query:
     @strawberry.field
     def product_slots(self) -> List[ProductSlotType]:
         db = SessionLocal()
-        product_slots = db.query(ProductSlotModel).all()
+        product_slots = db.query(ProductSlotModel).filter(ProductSlotModel.deleted_at.is_(None)).all()
         db.close()
         return [ProductSlotType(
             id=product_slot.id,
@@ -175,7 +184,10 @@ class Query:
     @strawberry.field
     def product_slot(self, product_slot_id: int) -> Optional[ProductSlotType]:
         db = SessionLocal()
-        product_slot = db.query(ProductSlotModel).filter(ProductSlotModel.id == product_slot_id).first()
+        product_slot = db.query(ProductSlotModel).filter(
+            ProductSlotModel.id == product_slot_id,
+            ProductSlotModel.deleted_at.is_(None)
+        ).first()
         db.close()
         if product_slot:
             return ProductSlotType(
@@ -200,7 +212,7 @@ class Query:
         status: Optional[str] = None
     ) -> List[ShiftType]:
         db = SessionLocal()
-        query = db.query(ShiftModel)
+        query = db.query(ShiftModel).filter(ShiftModel.deleted_at.is_(None))
         
         if shift_date is not None:
             query = query.filter(ShiftModel.shift_date == shift_date)
@@ -232,7 +244,10 @@ class Query:
     @strawberry.field
     def shift(self, shift_id: int) -> Optional[ShiftType]:
         db = SessionLocal()
-        shift = db.query(ShiftModel).filter(ShiftModel.id == shift_id).first()
+        shift = db.query(ShiftModel).filter(
+            ShiftModel.id == shift_id,
+            ShiftModel.deleted_at.is_(None)
+        ).first()
         db.close()
         if shift:
             return ShiftType(
@@ -259,7 +274,8 @@ class Query:
         db = SessionLocal()
         shift = db.query(ShiftModel).filter(
             ShiftModel.shift_template_id == shift_template_id,
-            ShiftModel.status == "active"
+            ShiftModel.status == "active",
+            ShiftModel.deleted_at.is_(None)
         ).first()
         db.close()
         if shift:

@@ -135,8 +135,8 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "mutation DeleteProductTemplate($productId: Int!) { deleteProductTemplate(productId: $productId) { id name code image isActive deletedAt deletedBy } }",
-            "variables": "{\n  \"productId\": 1\n}"
+            "query": "mutation DeleteProductTemplate($productId: Int!, $deletedBy: Int!) { deleteProductTemplate(productId: $productId, deletedBy: $deletedBy) { id name code image isActive deletedAt deletedBy } }",
+            "variables": "{\n  \"productId\": 1,\n  \"deletedBy\": 1\n}"
           }
         },
         "url": {

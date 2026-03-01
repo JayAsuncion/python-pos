@@ -135,8 +135,8 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "mutation DeleteProductSlot($productSlotId: Int!) { deleteProductSlot(productSlotId: $productSlotId) { id slotName productId isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
-            "variables": "{\n  \"productSlotId\": 1\n}"
+            "query": "mutation DeleteProductSlot($productSlotId: Int!, $deletedBy: Int!) { deleteProductSlot(productSlotId: $productSlotId, deletedBy: $deletedBy) { id slotName productId isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"productSlotId\": 1,\n  \"deletedBy\": 1\n}"
           }
         },
         "url": {

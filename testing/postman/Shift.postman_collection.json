@@ -179,6 +179,35 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "Delete Shift",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation DeleteShift($shiftId: Int!, $deletedBy: Int!) { deleteShift(shiftId: $shiftId, deletedBy: $deletedBy) { id shiftTemplateId shiftDate actualStartDatetime actualEndDatetime startedBy endedBy status isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"shiftId\": 1,\n  \"deletedBy\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
     }
   ],
   "event": [
