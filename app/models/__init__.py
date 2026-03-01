@@ -6,3 +6,7 @@ from .shift import *
 from .shift_user import *
 from .product_slot import *
 from .product_slot_reading import *
+from .permission import *
+from .role import *
+from .user_role import *
+from .role_permission import *

@@ -5,7 +5,7 @@ See [`AGENTS.md`](AGENTS.md) for the mandatory update checklist.
 
 This document provides a comprehensive overview of all entities in the Python POS system, their relationships, and business rules.
 
-**Last Updated:** March 1, 2026
+**Last Updated:** March 2, 2026
 
 ---
 
@@ -15,6 +15,7 @@ This document provides a comprehensive overview of all entities in the Python PO
 3. [Junction/Association Entities](#junctionassociation-entities)
 4. [Entity Relationships](#entity-relationships)
 5. [Common Patterns](#common-patterns)
+6. [Authentication & Authorization](#authentication--authorization)
 
 ---
 
@@ -41,6 +42,62 @@ This document provides a comprehensive overview of all entities in the Python PO
 **Business Rules:**
 - Username and email must be unique
 - No soft delete capability
+
+---
+
+### Permission
+**Purpose:** Defines system permissions for fine-grained access control
+
+**Table:** `permission`
+
+**Key Fields:**
+- `id` (PK) - Integer
+- `code` - String, unique (e.g., "CREATE_USER", "VIEW_PRODUCT")
+- `name` - String (human-readable name)
+- `description` - String (optional)
+- `category` - String (e.g., "USER", "PRODUCT", "RBAC")
+- Soft delete fields: `deleted_at`, `deleted_by`
+
+**Audit Pattern:** Soft delete only
+
+**Relationships:**
+- Referenced by: RolePermission (many-to-many with Role)
+
+**Business Rules:**
+- Code must be unique and follows SCREAMING_SNAKE_CASE convention
+- Base permissions are seeded via `app/auth/seed_permissions.py`
+- New permissions can be added dynamically via GraphQL mutations
+- Category groups related permissions together for UI organization
+- Cannot hard delete permissions that are assigned to roles
+
+---
+
+### Role
+**Purpose:** Groups permissions into named roles for assignment to users
+
+**Table:** `role`
+
+**Key Fields:**
+- `id` (PK) - Integer
+- `code` - String, unique (e.g., "SUPER_ADMIN", "CASHIER")
+- `name` - String (human-readable name)
+- `description` - String (optional)
+- `is_system_role` - Boolean (true for seeded default roles)
+- Soft delete fields: `deleted_at`, `deleted_by`
+
+**Audit Pattern:** Soft delete only
+
+**Relationships:**
+- Referenced by: UserRole (many-to-many with User)
+- Referenced by: RolePermission (many-to-many with Permission)
+
+**Business Rules:**
+- Code must be unique and follows SCREAMING_SNAKE_CASE convention
+- System roles (SUPER_ADMIN, MANAGER, CASHIER, VIEWER) are protected from modification
+- Cannot delete system roles
+- Custom roles can be created via GraphQL mutations
+- Permissions are assigned to roles, not directly to users
+- Cannot hard delete roles that have active user assignments
 
 ---
 
@@ -261,6 +318,58 @@ This document provides a comprehensive overview of all entities in the Python PO
 
 ---
 
+### UserRole
+**Purpose:** Many-to-many relationship tracking which roles are assigned to each user
+
+**Table:** `user_role`
+
+**Key Fields:**
+- `id` (PK) - Integer
+- `user_id` (FK → users)
+- `role_id` (FK → role)
+- Full audit fields: `deleted_at`, `deleted_by`, `created_at`, `created_by`, `updated_at`, `updated_by`
+
+**Audit Pattern:** Full audit trail
+
+**Relationships:**
+- Many-to-one with User
+- Many-to-one with Role
+
+**Business Rules:**
+- A user can have multiple roles
+- A role can be assigned to multiple users
+- Soft delete preserves historical role assignments
+- Audit trail tracks who assigned/revoked roles and when
+
+---
+
+### RolePermission
+**Purpose:** Many-to-many relationship defining which permissions are granted to each role
+
+**Table:** `role_permission`
+
+**Key Fields:**
+- `id` (PK) - Integer
+- `role_id` (FK → role)
+- `permission_id` (FK → permission)
+- Full audit fields: `deleted_at`, `deleted_by`, `created_at`, `created_by`, `updated_at`, `updated_by`
+
+**Audit Pattern:** Full audit trail
+
+**Relationships:**
+- Many-to-one with Role
+- Many-to-one with Permission
+
+**Business Rules:**
+- A role can have multiple permissions
+- A permission can be granted to multiple roles
+- Default role-permission mappings are seeded via `app/auth/seed_permissions.py`
+- Permissions can be dynamically added/removed from roles
+- Soft delete preserves historical permission grants
+- Audit trail tracks who granted/revoked permissions and when
+
+---
+
 ## Entity Relationships
 
 ### Relationship Diagram (Text)
@@ -270,6 +379,7 @@ User
 ├─→ Shift.started_by (who started shift)
 ├─→ Shift.ended_by (who ended shift)
 ├─→ ShiftUser.user_id (who worked on shift)
+├─→ UserRole.user_id (role assignments)
 └─→ [All audit fields: created_by, updated_by, deleted_by]
 
 ProductTemplate
@@ -288,6 +398,15 @@ ShiftTemplate
 Shift
 ├─→ ShiftUser.shift_id
 └─→ ProductSlotReading.shift_id
+
+Permission
+└─→ RolePermission.permission_id
+
+Role
+├─→ UserRole.role_id
+└─→ RolePermission.role_id
+
+RBAC Flow: User → UserRole → Role → RolePermission → Permission
 ```
 
 ---
@@ -299,11 +418,11 @@ Shift
 1. **No Audit** (User only)
    - Just basic fields
 
-2. **Soft Delete Only** (ProductTemplate)
+2. **Soft Delete Only** (ProductTemplate, Permission, Role)
    - Fields: `deleted_at`, `deleted_by`
    - Records marked as deleted but not removed
 
-3. **Full Audit Trail** (Product, ProductSlot, ShiftTemplate, Shift, ShiftUser, ProductSlotReading)
+3. **Full Audit Trail** (Product, ProductSlot, ShiftTemplate, Shift, ShiftUser, ProductSlotReading, UserRole, RolePermission)
    - Fields: `deleted_at`, `deleted_by`, `created_at`, `created_by`, `updated_at`, `updated_by`
    - Complete tracking of all changes
 
@@ -384,6 +503,168 @@ Shift
    - Changes status to "completed"
 
 **Result:** Completed shift with full sales calculation
+
+---
+
+## Authentication & Authorization
+
+### JWT Token Flow
+
+**Authentication Method:** Stateless JWT (JSON Web Token) authentication
+
+**Configuration:**
+- Algorithm: HS256
+- Expiration: 60 minutes (configurable via JWT_EXPIRATION_MINUTES)
+- Secret Key: Stored in `.env` file (JWT_SECRET_KEY)
+
+**Login Flow:**
+1. Client calls `login` mutation with username and password
+2. Server validates credentials using bcrypt password verification
+3. If valid, server generates JWT token containing user ID
+4. Client receives token and stores it for subsequent requests
+5. Client includes token in `Authorization: Bearer <token>` header for all protected operations
+
+**Token Contents:**
+- `sub` (subject): User ID
+- `exp` (expiration): Token expiry timestamp
+- `iat` (issued at): Token creation timestamp
+
+**Public Operations (No Authentication Required):**
+- `login` - Authenticate and get token
+
+**Authenticated Operations (Token Required, No Permission Check):**
+- `me` - Get current user info
+- `myPermissions` - List current user's permissions
+- `myRoles` - List current user's roles
+- `resetPassword` - Change own password
+
+**Protected Operations (Token + Permission Required):**
+- All other queries and mutations require valid JWT AND appropriate permission
+
+---
+
+### Password Management
+
+**Password Hashing:**
+- Algorithm: bcrypt via passlib
+- All new passwords are automatically hashed before storage
+- Plaintext password detection: Database may contain legacy plaintext passwords
+
+**Password Reset Flow:**
+1. Login response includes `requiresPasswordReset: Boolean` flag
+2. If true (plaintext password detected), user must call `resetPassword` before normal operations
+3. `resetPassword` mutation validates old password and hashes new password
+4. Admin users can force password reset for other users via `changeUserPassword` (requires UPDATE_USER permission)
+
+**Security Rules:**
+- Passwords must never be returned in GraphQL responses
+- Password verification uses constant-time comparison (bcrypt.verify)
+- Old plaintext passwords can still be used for verification but trigger reset requirement
+
+---
+
+### Permission-Based Authorization
+
+**Authorization Model:** Permission-based (not role-based)
+
+**Permission Check Flow:**
+1. Extract JWT token from `Authorization` header in request
+2. Decode token to get user ID
+3. Load user from database
+4. Traverse relationships: User → UserRole → Role → RolePermission → Permission
+5. Build set of permission codes user has access to
+6. Check if required permission code exists in user's permission set
+7. Allow operation if permission exists, deny otherwise
+
+**Implementation Pattern:**
+
+Every protected GraphQL resolver must:
+```python
+from app.auth.permissions import require_permission
+import strawberry.types
+
+@strawberry.mutation
+def create_product(self, info: strawberry.types.Info, name: str, ...) -> ProductType:
+    require_permission(info, "CREATE_PRODUCT")
+    # ... rest of mutation logic
+```
+
+**Permission Naming Convention:**
+- Format: `{ACTION}_{ENTITY}` (e.g., `CREATE_USER`, `VIEW_PRODUCT`, `DELETE_SHIFT`)
+- Actions: `VIEW`, `CREATE`, `UPDATE`, `DELETE`, and custom actions (e.g., `START_SHIFT`, `GRANT_PERMISSION`)
+- Special permissions: `ASSIGN_ROLE`, `REVOKE_ROLE`, `GRANT_PERMISSION`, `REVOKE_PERMISSION`
+
+**Permission Categories:**
+- `USER` - User management operations
+- `PRODUCT` - Product CRUD operations
+- `PRODUCT_TEMPLATE` - Product template management
+- `PRODUCT_SLOT` - Product slot management
+- `PRODUCT_SLOT_READING` - Reading deletion (only delete allowed)
+- `SHIFT` - Shift operations
+- `SHIFT_TEMPLATE` - Shift template management
+- `SHIFT_USER` - Shift user assignment deletion
+- `RBAC` - Role and permission management
+
+**Default Roles and Permissions:**
+
+1. **SUPER_ADMIN** (40 permissions)
+   - All permissions in the system
+   - System role, cannot be modified or deleted
+
+2. **MANAGER** (23 permissions)
+   - All VIEW permissions
+   - All CREATE/UPDATE/DELETE for products, templates, slots, shifts
+   - Limited RBAC: VIEW permissions/roles, ASSIGN/REVOKE roles
+   - Cannot create/modify permissions or roles
+
+3. **CASHIER** (7 permissions)
+   - VIEW: Products, Product Templates, Product Slots, Shifts, Shift Templates
+   - START_SHIFT, END_SHIFT
+   - No administrative or editing capabilities
+
+4. **VIEWER** (5 permissions)
+   - VIEW only: Products, Product Templates, Product Slots, Shifts, Shift Templates
+   - Read-only access, no modifications
+
+**Permission Seeding:**
+- Base permissions defined in `app/auth/seed_permissions.py`
+- Run with: `python -m app.auth.seed_permissions`
+- Idempotent: Safe to run multiple times, skips existing records
+- New permissions can be added dynamically via `createPermission` mutation
+
+---
+
+### GraphQL Context
+
+**Custom Context Structure:**
+```python
+{
+    "request": Request,  # FastAPI request object
+    "user": User | None  # Authenticated user or None
+}
+```
+
+**Context Getter:** `app/context.py` extracts JWT from headers and loads user
+
+**Accessing Context in Resolvers:**
+```python
+def my_resolver(self, info: strawberry.types.Info):
+    user = info.context.get("user")  # Authenticated user or None
+    request = info.context.get("request")  # FastAPI request object
+```
+
+---
+
+### Security Best Practices
+
+1. **Never expose passwords:** User queries/mutations never return `hashed_password` field
+2. **Always verify tokens:** Use `require_auth()` or `require_permission()` on all protected operations
+3. **Use permission checks, not role checks:** Check for `CREATE_USER` permission, not `is_admin` flag
+4. **Audit all permission changes:** Full audit trail on UserRole and RolePermission
+5. **Protect system roles:** System roles (is_system_role=true) cannot be deleted or have permissions modified
+6. **Force password resets:** Detect legacy plaintext passwords and require reset on next login
+7. **Token expiration:** Tokens expire after 60 minutes, client must re-authenticate
+8. **Centralized permission logic:** All permission checks go through `app/auth/permissions.py`
 
 ---
 

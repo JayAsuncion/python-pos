@@ -2,6 +2,7 @@ import strawberry
 from typing import Optional
 from datetime import datetime, time
 from sqlalchemy import func
+from app.auth.permissions import require_permission
 from app.models.shift_template import ShiftTemplate as ShiftTemplateModel
 from app.models.shift import Shift as ShiftModel
 from app.models.shift_user import ShiftUser as ShiftUserModel
@@ -15,6 +16,7 @@ class ShiftTemplateMutations:
     @strawberry.mutation(name="createShiftTemplate")
     def create_shift_template(
         self,
+        info: strawberry.types.Info,
         shift_name: str,
         start_time: time,
         end_time: time,
@@ -24,6 +26,7 @@ class ShiftTemplateMutations:
         deleted_by: Optional[int] = None,
         created_by: Optional[int] = None
     ) -> ShiftTemplateType:
+        require_permission(info, "CREATE_SHIFT_TEMPLATE")
         db = SessionLocal()
         db_shift_template = ShiftTemplateModel(
             shift_name=shift_name,
@@ -58,6 +61,7 @@ class ShiftTemplateMutations:
     @strawberry.mutation(name="updateShiftTemplate")
     def update_shift_template(
         self,
+        info: strawberry.types.Info,
         shift_template_id: int,
         shift_name: Optional[str] = None,
         start_time: Optional[time] = None,
@@ -68,6 +72,7 @@ class ShiftTemplateMutations:
         deleted_by: Optional[int] = None,
         updated_by: Optional[int] = None
     ) -> Optional[ShiftTemplateType]:
+        require_permission(info, "UPDATE_SHIFT_TEMPLATE")
         db = SessionLocal()
         db_shift_template = db.query(ShiftTemplateModel).filter(ShiftTemplateModel.id == shift_template_id).first()
         if db_shift_template:
@@ -111,7 +116,8 @@ class ShiftTemplateMutations:
         return result
 
     @strawberry.mutation(name="deleteShiftTemplate")
-    def delete_shift_template(self, shift_template_id: int, deleted_by: int) -> Optional[ShiftTemplateType]:
+    def delete_shift_template(self, info: strawberry.types.Info, shift_template_id: int, deleted_by: int) -> Optional[ShiftTemplateType]:
+        require_permission(info, "DELETE_SHIFT_TEMPLATE")
         db = SessionLocal()
         db_shift_template = db.query(ShiftTemplateModel).filter(ShiftTemplateModel.id == shift_template_id).first()
         if db_shift_template:

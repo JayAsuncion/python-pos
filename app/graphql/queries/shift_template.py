@@ -1,5 +1,6 @@
 import strawberry
 from typing import List, Optional
+from app.auth.permissions import require_permission
 from app.models.shift_template import ShiftTemplate as ShiftTemplateModel
 from app.schemas.shift_template import ShiftTemplateType
 from app.database import SessionLocal
@@ -8,7 +9,8 @@ from app.database import SessionLocal
 @strawberry.type
 class ShiftTemplateQueries:
     @strawberry.field
-    def shift_templates(self) -> List[ShiftTemplateType]:
+    def shift_templates(self, info: strawberry.types.Info) -> List[ShiftTemplateType]:
+        require_permission(info, "VIEW_SHIFT_TEMPLATE")
         db = SessionLocal()
         shift_templates = db.query(ShiftTemplateModel).filter(ShiftTemplateModel.deleted_at.is_(None)).all()
         db.close()
@@ -28,7 +30,8 @@ class ShiftTemplateQueries:
         ) for shift_template in shift_templates]
 
     @strawberry.field
-    def shift_template(self, shift_template_id: int) -> Optional[ShiftTemplateType]:
+    def shift_template(self, info: strawberry.types.Info, shift_template_id: int) -> Optional[ShiftTemplateType]:
+        require_permission(info, "VIEW_SHIFT_TEMPLATE")
         db = SessionLocal()
         shift_template = db.query(ShiftTemplateModel).filter(
             ShiftTemplateModel.id == shift_template_id,

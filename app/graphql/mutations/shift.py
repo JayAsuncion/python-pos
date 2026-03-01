@@ -2,6 +2,7 @@ import strawberry
 from typing import Optional, List
 from datetime import date
 from sqlalchemy import func
+from app.auth.permissions import require_permission
 from app.models.shift import Shift as ShiftModel
 from app.models.shift_user import ShiftUser as ShiftUserModel
 from app.models.product_slot import ProductSlot as ProductSlotModel
@@ -17,6 +18,7 @@ class ShiftMutations:
     @strawberry.mutation(name="startShift")
     def start_shift(
         self,
+        info: strawberry.types.Info,
         shift_template_id: int,
         shift_date: date,
         user_ids: List[int],
@@ -24,6 +26,7 @@ class ShiftMutations:
         readings: List[StartReadingInput],
         created_by: Optional[int] = None
     ) -> ShiftType:
+        require_permission(info, "START_SHIFT")
         db = SessionLocal()
         
         # Validate no active shift exists for this template
@@ -118,11 +121,13 @@ class ShiftMutations:
     @strawberry.mutation(name="endShift")
     def end_shift(
         self,
+        info: strawberry.types.Info,
         shift_id: int,
         ended_by: int,
         readings: List[EndReadingInput],
         updated_by: Optional[int] = None
     ) -> ShiftType:
+        require_permission(info, "END_SHIFT")
         db = SessionLocal()
         
         # Get the shift
@@ -191,7 +196,8 @@ class ShiftMutations:
         return result
     
     @strawberry.mutation(name="deleteShift")
-    def delete_shift(self, shift_id: int, deleted_by: int) -> Optional[ShiftType]:
+    def delete_shift(self, info: strawberry.types.Info, shift_id: int, deleted_by: int) -> Optional[ShiftType]:
+        require_permission(info, "DELETE_SHIFT")
         db = SessionLocal()
         db_shift = db.query(ShiftModel).filter(ShiftModel.id == shift_id).first()
         if db_shift:

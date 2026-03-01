@@ -2,6 +2,7 @@ import strawberry
 from typing import Optional
 from datetime import datetime
 from sqlalchemy import func
+from app.auth.permissions import require_permission
 from app.models.product_slot import ProductSlot as ProductSlotModel
 from app.models.product_slot_reading import ProductSlotReading as ProductSlotReadingModel
 from app.schemas.product_slot import ProductSlotType
@@ -13,6 +14,7 @@ class ProductSlotMutations:
     @strawberry.mutation(name="createProductSlot")
     def create_product_slot(
         self,
+        info: strawberry.types.Info,
         slot_name: str,
         product_id: Optional[int] = None,
         is_active: bool = True,
@@ -20,6 +22,7 @@ class ProductSlotMutations:
         deleted_by: Optional[int] = None,
         created_by: Optional[int] = None
     ) -> ProductSlotType:
+        require_permission(info, "CREATE_PRODUCT_SLOT")
         db = SessionLocal()
         db_product_slot = ProductSlotModel(
             slot_name=slot_name,
@@ -50,6 +53,7 @@ class ProductSlotMutations:
     @strawberry.mutation(name="updateProductSlot")
     def update_product_slot(
         self,
+        info: strawberry.types.Info,
         product_slot_id: int,
         slot_name: Optional[str] = None,
         product_id: Optional[int] = None,
@@ -58,6 +62,7 @@ class ProductSlotMutations:
         deleted_by: Optional[int] = None,
         updated_by: Optional[int] = None
     ) -> Optional[ProductSlotType]:
+        require_permission(info, "UPDATE_PRODUCT_SLOT")
         db = SessionLocal()
         db_product_slot = db.query(ProductSlotModel).filter(ProductSlotModel.id == product_slot_id).first()
         if db_product_slot:
@@ -95,7 +100,8 @@ class ProductSlotMutations:
         return result
 
     @strawberry.mutation(name="deleteProductSlot")
-    def delete_product_slot(self, product_slot_id: int, deleted_by: int) -> Optional[ProductSlotType]:
+    def delete_product_slot(self, info: strawberry.types.Info, product_slot_id: int, deleted_by: int) -> Optional[ProductSlotType]:
+        require_permission(info, "DELETE_PRODUCT_SLOT")
         db = SessionLocal()
         db_product_slot = db.query(ProductSlotModel).filter(ProductSlotModel.id == product_slot_id).first()
         if db_product_slot:

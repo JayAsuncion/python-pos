@@ -1,6 +1,7 @@
 import strawberry
 from typing import List, Optional
 from datetime import date
+from app.auth.permissions import require_permission
 from app.models.shift import Shift as ShiftModel
 from app.schemas.shift import ShiftType
 from app.database import SessionLocal
@@ -11,10 +12,12 @@ class ShiftQueries:
     @strawberry.field
     def shifts(
         self,
+        info: strawberry.types.Info,
         shift_date: Optional[date] = None,
         shift_template_id: Optional[int] = None,
         status: Optional[str] = None
     ) -> List[ShiftType]:
+        require_permission(info, "VIEW_SHIFT")
         db = SessionLocal()
         query = db.query(ShiftModel).filter(ShiftModel.deleted_at.is_(None))
         
@@ -46,7 +49,8 @@ class ShiftQueries:
         ) for shift in shifts]
 
     @strawberry.field
-    def shift(self, shift_id: int) -> Optional[ShiftType]:
+    def shift(self, info: strawberry.types.Info, shift_id: int) -> Optional[ShiftType]:
+        require_permission(info, "VIEW_SHIFT")
         db = SessionLocal()
         shift = db.query(ShiftModel).filter(
             ShiftModel.id == shift_id,
@@ -74,7 +78,8 @@ class ShiftQueries:
         return None
 
     @strawberry.field
-    def active_shift(self, shift_template_id: int) -> Optional[ShiftType]:
+    def active_shift(self, info: strawberry.types.Info, shift_template_id: int) -> Optional[ShiftType]:
+        require_permission(info, "VIEW_SHIFT")
         db = SessionLocal()
         shift = db.query(ShiftModel).filter(
             ShiftModel.shift_template_id == shift_template_id,

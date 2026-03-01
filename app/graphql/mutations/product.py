@@ -7,6 +7,7 @@ from app.models.product import Product as ProductModel
 from app.models.product_slot import ProductSlot as ProductSlotModel
 from app.models.product_slot_reading import ProductSlotReading as ProductSlotReadingModel
 from app.schemas.product import ProductType
+from app.auth.permissions import require_permission
 from app.database import SessionLocal
 
 
@@ -15,6 +16,7 @@ class ProductMutations:
     @strawberry.mutation(name="createProduct")
     def create_product(
         self,
+        info: strawberry.types.Info,
         product_template_id: int,
         starting_stock: float,
         cost_price: float,
@@ -28,6 +30,7 @@ class ProductMutations:
         deleted_by: Optional[int] = None,
         created_by: Optional[int] = None
     ) -> ProductType:
+        require_permission(info, "CREATE_PRODUCT")
         db = SessionLocal()
         
         # Fetch product template to derive values if not provided
@@ -86,6 +89,7 @@ class ProductMutations:
     @strawberry.mutation(name="updateProduct")
     def update_product(
         self,
+        info: strawberry.types.Info,
         product_id: int,
         product_template_id: Optional[int] = None,
         name: Optional[str] = None,
@@ -100,6 +104,7 @@ class ProductMutations:
         deleted_by: Optional[int] = None,
         updated_by: Optional[int] = None
     ) -> Optional[ProductType]:
+        require_permission(info, "UPDATE_PRODUCT")
         db = SessionLocal()
         db_product = db.query(ProductModel).filter(ProductModel.id == product_id).first()
         if db_product:
@@ -155,7 +160,8 @@ class ProductMutations:
         return result
 
     @strawberry.mutation(name="deleteProduct")
-    def delete_product(self, product_id: int, deleted_by: int) -> Optional[ProductType]:
+    def delete_product(self, info: strawberry.types.Info, product_id: int, deleted_by: int) -> Optional[ProductType]:
+        require_permission(info, "DELETE_PRODUCT")
         db = SessionLocal()
         db_product = db.query(ProductModel).filter(ProductModel.id == product_id).first()
         if db_product:

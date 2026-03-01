@@ -1,0 +1,1700 @@
+{
+	"info": {
+		"_postman_id": "auth-rbac-collection-001",
+		"name": "Authentication and RBAC",
+		"description": "Complete API collection for JWT Authentication and Role-Based Access Control (RBAC) system. Includes login, permission management, role management, and user-role assignments.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has access token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.login.token.accessToken).to.exist;",
+									"    // Save token to environment",
+									"    pm.environment.set(\"accessToken\", jsonData.data.login.token.accessToken);",
+									"});",
+									"",
+									"pm.test(\"Response has user data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.login.user).to.exist;",
+									"    pm.expect(jsonData.data.login.user.username).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation Login($username: String!, $password: String!) {\n  login(username: $username, password: $password) {\n    token {\n      accessToken\n      tokenType\n    }\n    user {\n      id\n      username\n      email\n      firstName\n      lastName\n    }\n    requiresPasswordReset\n  }\n}",
+								"variables": "{\n  \"username\": \"superadmin\",\n  \"password\": \"changeme123\"\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Authenticate with username and password. Returns JWT access token and user details. If password is plaintext, requiresPasswordReset will be true."
+					},
+					"response": []
+				},
+				{
+					"name": "Me (Current User)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has current user data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.me).to.exist;",
+									"    pm.expect(jsonData.data.me.username).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query Me {\n  me {\n    id\n    username\n    email\n    firstName\n    lastName\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Get information about the currently authenticated user."
+					},
+					"response": []
+				},
+				{
+					"name": "My Permissions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has permissions array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.myPermissions).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query MyPermissions {\n  myPermissions\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Get all permission codes assigned to the current user through their roles."
+					},
+					"response": []
+				},
+				{
+					"name": "My Roles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has roles array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.myRoles).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query MyRoles {\n  myRoles {\n    id\n    code\n    name\n    description\n    isSystemRole\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Get all roles assigned to the current user."
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Password reset successful\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.resetPassword).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation ResetPassword($oldPassword: String!, $newPassword: String!) {\n  resetPassword(oldPassword: $oldPassword, newPassword: $newPassword)\n}",
+								"variables": "{\n  \"oldPassword\": \"changeme123\",\n  \"newPassword\": \"SecurePass123!\"\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Reset your own password. Requires old password verification."
+					},
+					"response": []
+				},
+				{
+					"name": "Change User Password (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Password change successful\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.changeUserPassword).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation ChangeUserPassword($userId: Int!, $newPassword: String!) {\n  changeUserPassword(userId: $userId, newPassword: $newPassword)\n}",
+								"variables": "{\n  \"userId\": 2,\n  \"newPassword\": \"NewPassword123!\"\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Admin-only: Reset another user's password. Requires UPDATE_USER permission."
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication operations including login, profile queries, and password management."
+		},
+		{
+			"name": "Permissions",
+			"item": [
+				{
+					"name": "List Permissions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has permissions array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.permissions).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query Permissions {\n  permissions {\n    id\n    code\n    name\n    description\n    category\n    deletedAt\n    deletedBy\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Get all active permissions. Requires VIEW_PERMISSION."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Permission by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has permission data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.permission).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query Permission($permissionId: Int!) {\n  permission(permissionId: $permissionId) {\n    id\n    code\n    name\n    description\n    category\n  }\n}",
+								"variables": "{\n  \"permissionId\": 1\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Get a specific permission by ID. Requires VIEW_PERMISSION."
+					},
+					"response": []
+				},
+				{
+					"name": "List Permissions by Category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has permissions for category\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.permissionsByCategory).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query PermissionsByCategory($category: String!) {\n  permissionsByCategory(category: $category) {\n    id\n    code\n    name\n    description\n    category\n  }\n}",
+								"variables": "{\n  \"category\": \"RBAC\"\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Get permissions filtered by category (USER, PRODUCT, RBAC, etc.). Requires VIEW_PERMISSION."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Permission",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Permission created successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.createPermission).to.exist;",
+									"    pm.expect(jsonData.data.createPermission.code).to.equal(\"CUSTOM_PERMISSION\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation CreatePermission($code: String!, $name: String!, $category: String!, $description: String) {\n  createPermission(code: $code, name: $name, category: $category, description: $description) {\n    id\n    code\n    name\n    description\n    category\n  }\n}",
+								"variables": "{\n  \"code\": \"CUSTOM_PERMISSION\",\n  \"name\": \"Custom Permission\",\n  \"category\": \"CUSTOM\",\n  \"description\": \"A custom permission for testing\"\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Create a new permission. Requires CREATE_PERMISSION."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Permission",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Permission updated successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.updatePermission).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation UpdatePermission($permissionId: Int!, $name: String, $description: String, $category: String) {\n  updatePermission(permissionId: $permissionId, name: $name, description: $description, category: $category) {\n    id\n    code\n    name\n    description\n    category\n  }\n}",
+								"variables": "{\n  \"permissionId\": 41,\n  \"name\": \"Updated Custom Permission\",\n  \"description\": \"Updated description for custom permission\"\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Update an existing permission. Requires UPDATE_PERMISSION."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Permission",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Permission deleted successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.deletePermission).to.exist;",
+									"    pm.expect(jsonData.data.deletePermission.deletedAt).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation DeletePermission($permissionId: Int!) {\n  deletePermission(permissionId: $permissionId) {\n    id\n    code\n    name\n    deletedAt\n    deletedBy\n  }\n}",
+								"variables": "{\n  \"permissionId\": 41\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Soft delete a permission. Requires DELETE_PERMISSION."
+					},
+					"response": []
+				}
+			],
+			"description": "CRUD operations for permissions."
+		},
+		{
+			"name": "Roles",
+			"item": [
+				{
+					"name": "List Roles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has roles array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.roles).to.be.an('array');",
+									"    pm.expect(jsonData.data.roles.length).to.be.at.least(4);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query Roles {\n  roles {\n    id\n    code\n    name\n    description\n    isSystemRole\n    deletedAt\n    deletedBy\n  }\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Get all active roles. Requires VIEW_ROLE."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Role by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has role data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.role).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query Role($roleId: Int!) {\n  role(roleId: $roleId) {\n    id\n    code\n    name\n    description\n    isSystemRole\n  }\n}",
+								"variables": "{\n  \"roleId\": 1\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Get a specific role by ID. Requires VIEW_ROLE."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Role created successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.createRole).to.exist;",
+									"    pm.expect(jsonData.data.createRole.code).to.equal(\"INVENTORY_MANAGER\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation CreateRole($code: String!, $name: String!, $description: String) {\n  createRole(code: $code, name: $name, description: $description) {\n    id\n    code\n    name\n    description\n    isSystemRole\n  }\n}",
+								"variables": "{\n  \"code\": \"INVENTORY_MANAGER\",\n  \"name\": \"Inventory Manager\",\n  \"description\": \"Manages product inventory and stock levels\"\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Create a new role. Requires CREATE_ROLE."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Role updated successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.updateRole).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation UpdateRole($roleId: Int!, $name: String, $description: String) {\n  updateRole(roleId: $roleId, name: $name, description: $description) {\n    id\n    code\n    name\n    description\n    isSystemRole\n  }\n}",
+								"variables": "{\n  \"roleId\": 5,\n  \"name\": \"Updated Inventory Manager\",\n  \"description\": \"Updated: Manages product inventory, stock levels, and purchasing\"\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Update an existing role. Requires UPDATE_ROLE."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Role deleted successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.deleteRole).to.exist;",
+									"    pm.expect(jsonData.data.deleteRole.deletedAt).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation DeleteRole($roleId: Int!) {\n  deleteRole(roleId: $roleId) {\n    id\n    code\n    name\n    deletedAt\n    deletedBy\n  }\n}",
+								"variables": "{\n  \"roleId\": 5\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Soft delete a role. Cannot delete system roles. Requires DELETE_ROLE."
+					},
+					"response": []
+				}
+			],
+			"description": "CRUD operations for roles."
+		},
+		{
+			"name": "User Roles",
+			"item": [
+				{
+					"name": "Get User Roles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has user roles array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.userRoles).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query UserRoles($userId: Int!) {\n  userRoles(userId: $userId) {\n    id\n    userId\n    roleId\n    createdAt\n    createdBy\n    updatedAt\n    updatedBy\n  }\n}",
+								"variables": "{\n  \"userId\": 1\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Get all roles assigned to a specific user. Requires VIEW_USER_ROLE."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Role Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has role users array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.roleUsers).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query RoleUsers($roleId: Int!) {\n  roleUsers(roleId: $roleId) {\n    id\n    userId\n    roleId\n    createdAt\n    createdBy\n  }\n}",
+								"variables": "{\n  \"roleId\": 1\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Get all users assigned to a specific role. Requires VIEW_USER_ROLE."
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Role to User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Role assigned successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.assignRoleToUser).to.exist;",
+									"    pm.expect(jsonData.data.assignRoleToUser.userId).to.equal(2);",
+									"    pm.expect(jsonData.data.assignRoleToUser.roleId).to.equal(3);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation AssignRoleToUser($userId: Int!, $roleId: Int!) {\n  assignRoleToUser(userId: $userId, roleId: $roleId) {\n    id\n    userId\n    roleId\n    createdAt\n    createdBy\n  }\n}",
+								"variables": "{\n  \"userId\": 2,\n  \"roleId\": 3\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Assign a role to a user. Requires ASSIGN_ROLE permission."
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Role from User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Role removed successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.removeRoleFromUser).to.exist;",
+									"    pm.expect(jsonData.data.removeRoleFromUser.deletedAt).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation RemoveRoleFromUser($userId: Int!, $roleId: Int!) {\n  removeRoleFromUser(userId: $userId, roleId: $roleId) {\n    id\n    userId\n    roleId\n    deletedAt\n    deletedBy\n  }\n}",
+								"variables": "{\n  \"userId\": 2,\n  \"roleId\": 3\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Remove a role from a user (soft delete). Requires REVOKE_ROLE permission."
+					},
+					"response": []
+				}
+			],
+			"description": "Manage user-role assignments."
+		},
+		{
+			"name": "Role Permissions",
+			"item": [
+				{
+					"name": "Get Role Permissions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has role permissions array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.rolePermissions).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query RolePermissions($roleId: Int!) {\n  rolePermissions(roleId: $roleId) {\n    id\n    roleId\n    permissionId\n    createdAt\n    createdBy\n  }\n}",
+								"variables": "{\n  \"roleId\": 3\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Get all permissions assigned to a specific role. Requires VIEW_ROLE_PERMISSION."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Permission Roles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has permission roles array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.permissionRoles).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query PermissionRoles($permissionId: Int!) {\n  permissionRoles(permissionId: $permissionId) {\n    id\n    roleId\n    permissionId\n    createdAt\n    createdBy\n  }\n}",
+								"variables": "{\n  \"permissionId\": 1\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Get all roles that have a specific permission. Requires VIEW_ROLE_PERMISSION."
+					},
+					"response": []
+				},
+				{
+					"name": "Add Permission to Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Permission added successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.addPermissionToRole).to.exist;",
+									"    pm.expect(jsonData.data.addPermissionToRole.roleId).to.equal(3);",
+									"    pm.expect(jsonData.data.addPermissionToRole.permissionId).to.equal(6);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation AddPermissionToRole($roleId: Int!, $permissionId: Int!) {\n  addPermissionToRole(roleId: $roleId, permissionId: $permissionId) {\n    id\n    roleId\n    permissionId\n    createdAt\n    createdBy\n  }\n}",
+								"variables": "{\n  \"roleId\": 3,\n  \"permissionId\": 6\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Grant a permission to a role. Requires GRANT_PERMISSION."
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Permission from Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Permission removed successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.removePermissionFromRole).to.exist;",
+									"    pm.expect(jsonData.data.removePermissionFromRole.deletedAt).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation RemovePermissionFromRole($roleId: Int!, $permissionId: Int!) {\n  removePermissionFromRole(roleId: $roleId, permissionId: $permissionId) {\n    id\n    roleId\n    permissionId\n    deletedAt\n    deletedBy\n  }\n}",
+								"variables": "{\n  \"roleId\": 3,\n  \"permissionId\": 6\n}"
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Revoke a permission from a role (soft delete). Requires REVOKE_PERMISSION."
+					},
+					"response": []
+				}
+			],
+			"description": "Manage role-permission assignments."
+		},
+		{
+			"name": "Test Scenarios",
+			"item": [
+				{
+					"name": "Scenario: Create New Cashier",
+					"item": [
+						{
+							"name": "1. Create User",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{accessToken}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation CreateUser($username: String!, $email: String!, $firstName: String!, $lastName: String!, $hashedPassword: String!) {\n  createUser(username: $username, email: $email, firstName: $firstName, lastName: $lastName, hashedPassword: $hashedPassword) {\n    id\n    username\n    email\n  }\n}",
+										"variables": "{\n  \"username\": \"cashier1\",\n  \"email\": \"cashier1@pos.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Cashier\",\n  \"hashedPassword\": \"welcome123\"\n}"
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/graphql",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"graphql"
+									]
+								},
+								"description": "Step 1: Create a new user account"
+							},
+							"response": []
+						},
+						{
+							"name": "2. Assign Cashier Role",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{accessToken}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation AssignRoleToUser($userId: Int!, $roleId: Int!) {\n  assignRoleToUser(userId: $userId, roleId: $roleId) {\n    id\n    userId\n    roleId\n  }\n}",
+										"variables": "{\n  \"userId\": 2,\n  \"roleId\": 3\n}"
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/graphql",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"graphql"
+									]
+								},
+								"description": "Step 2: Assign CASHIER role (roleId: 3) to the new user"
+							},
+							"response": []
+						},
+						{
+							"name": "3. Test Cashier Login",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation Login($username: String!, $password: String!) {\n  login(username: $username, password: $password) {\n    token {\n      accessToken\n    }\n    user {\n      username\n    }\n    requiresPasswordReset\n  }\n}",
+										"variables": "{\n  \"username\": \"cashier1\",\n  \"password\": \"welcome123\"\n}"
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/graphql",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"graphql"
+									]
+								},
+								"description": "Step 3: Test login as the new cashier"
+							},
+							"response": []
+						}
+					],
+					"description": "Complete workflow to create and configure a new cashier user."
+				},
+				{
+					"name": "Scenario: Unauthorized Access Test",
+					"item": [
+						{
+							"name": "Try Create User Without Permission",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should get permission denied error\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.errors).to.exist;",
+											"    pm.expect(jsonData.errors[0].message).to.include(\"Permission denied\");",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{cashierToken}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation CreateUser($username: String!, $email: String!, $firstName: String!, $lastName: String!, $hashedPassword: String!) {\n  createUser(username: $username, email: $email, firstName: $firstName, lastName: $lastName, hashedPassword: $hashedPassword) {\n    id\n    username\n  }\n}",
+										"variables": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@pos.com\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"hashedPassword\": \"test123\"\n}"
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/graphql",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"graphql"
+									]
+								},
+								"description": "Test that a cashier (without CREATE_USER permission) cannot create users"
+							},
+							"response": []
+						}
+					],
+					"description": "Test unauthorized access scenarios to verify permission system works correctly."
+				}
+			],
+			"description": "Complete test scenarios demonstrating common workflows."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "cashierToken",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

@@ -16,6 +16,10 @@ from app.models.shift_user import ShiftUser
 from app.models.product import Product
 from app.models.product_slot import ProductSlot
 from app.models.product_slot_reading import ProductSlotReading
+from app.models.permission import Permission
+from app.models.role import Role
+from app.models.user_role import UserRole
+from app.models.role_permission import RolePermission
 
 config = context.config
 

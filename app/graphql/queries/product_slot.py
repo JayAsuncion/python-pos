@@ -1,5 +1,6 @@
 import strawberry
 from typing import List, Optional
+from app.auth.permissions import require_permission
 from app.models.product_slot import ProductSlot as ProductSlotModel
 from app.schemas.product_slot import ProductSlotType
 from app.database import SessionLocal
@@ -8,7 +9,8 @@ from app.database import SessionLocal
 @strawberry.type
 class ProductSlotQueries:
     @strawberry.field
-    def product_slots(self) -> List[ProductSlotType]:
+    def product_slots(self, info: strawberry.types.Info) -> List[ProductSlotType]:
+        require_permission(info, "VIEW_PRODUCT_SLOT")
         db = SessionLocal()
         product_slots = db.query(ProductSlotModel).filter(ProductSlotModel.deleted_at.is_(None)).all()
         db.close()
@@ -26,7 +28,8 @@ class ProductSlotQueries:
         ) for product_slot in product_slots]
 
     @strawberry.field
-    def product_slot(self, product_slot_id: int) -> Optional[ProductSlotType]:
+    def product_slot(self, info: strawberry.types.Info, product_slot_id: int) -> Optional[ProductSlotType]:
+        require_permission(info, "VIEW_PRODUCT_SLOT")
         db = SessionLocal()
         product_slot = db.query(ProductSlotModel).filter(
             ProductSlotModel.id == product_slot_id,

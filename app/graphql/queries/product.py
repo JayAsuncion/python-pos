@@ -2,13 +2,15 @@ import strawberry
 from typing import List, Optional
 from app.models.product import Product as ProductModel
 from app.schemas.product import ProductType
+from app.auth.permissions import require_permission
 from app.database import SessionLocal
 
 
 @strawberry.type
 class ProductQueries:
     @strawberry.field
-    def products(self) -> List[ProductType]:
+    def products(self, info: strawberry.types.Info) -> List[ProductType]:
+        require_permission(info, "VIEW_PRODUCT")
         db = SessionLocal()
         products = db.query(ProductModel).filter(ProductModel.deleted_at.is_(None)).all()
         db.close()
@@ -32,7 +34,8 @@ class ProductQueries:
         ) for product in products]
 
     @strawberry.field
-    def product(self, product_id: int) -> Optional[ProductType]:
+    def product(self, info: strawberry.types.Info, product_id: int) -> Optional[ProductType]:
+        require_permission(info, "VIEW_PRODUCT")
         db = SessionLocal()
         product = db.query(ProductModel).filter(
             ProductModel.id == product_id,

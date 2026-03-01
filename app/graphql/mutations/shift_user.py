@@ -1,6 +1,7 @@
 import strawberry
 from typing import Optional
 from sqlalchemy import func
+from app.auth.permissions import require_permission
 from app.models.shift_user import ShiftUser as ShiftUserModel
 from app.schemas.shift_user import ShiftUserType
 from app.database import SessionLocal
@@ -9,7 +10,8 @@ from app.database import SessionLocal
 @strawberry.type
 class ShiftUserMutations:
     @strawberry.mutation(name="deleteShiftUser")
-    def delete_shift_user(self, shift_user_id: int, deleted_by: int) -> Optional[ShiftUserType]:
+    def delete_shift_user(self, info: strawberry.types.Info, shift_user_id: int, deleted_by: int) -> Optional[ShiftUserType]:
+        require_permission(info, "DELETE_SHIFT_USER")
         db = SessionLocal()
         db_shift_user = db.query(ShiftUserModel).filter(ShiftUserModel.id == shift_user_id).first()
         if db_shift_user:

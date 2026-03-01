@@ -1,6 +1,7 @@
 import strawberry
 from typing import Optional
 from sqlalchemy import func
+from app.auth.permissions import require_permission
 from app.models.product_slot_reading import ProductSlotReading as ProductSlotReadingModel
 from app.schemas.product_slot_reading import ProductSlotReadingType
 from app.database import SessionLocal
@@ -9,7 +10,8 @@ from app.database import SessionLocal
 @strawberry.type
 class ProductSlotReadingMutations:
     @strawberry.mutation(name="deleteProductSlotReading")
-    def delete_product_slot_reading(self, product_slot_reading_id: int, deleted_by: int) -> Optional[ProductSlotReadingType]:
+    def delete_product_slot_reading(self, info: strawberry.types.Info, product_slot_reading_id: int, deleted_by: int) -> Optional[ProductSlotReadingType]:
+        require_permission(info, "DELETE_PRODUCT_SLOT_READING")
         db = SessionLocal()
         db_reading = db.query(ProductSlotReadingModel).filter(ProductSlotReadingModel.id == product_slot_reading_id).first()
         if db_reading:

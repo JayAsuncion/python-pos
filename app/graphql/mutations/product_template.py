@@ -2,6 +2,7 @@ import strawberry
 from typing import Optional
 from datetime import datetime
 from sqlalchemy import func
+from app.auth.permissions import require_permission
 from app.models.product_template import ProductTemplate as ProductTemplateModel
 from app.models.product import Product as ProductModel
 from app.models.product_slot import ProductSlot as ProductSlotModel
@@ -15,6 +16,7 @@ class ProductTemplateMutations:
     @strawberry.mutation(name="createProductTemplate")
     def create_product_template(
         self,
+        info: strawberry.types.Info,
         name: str,
         code: str,
         image: Optional[str] = None,
@@ -22,6 +24,7 @@ class ProductTemplateMutations:
         deleted_at: Optional[datetime] = None,
         deleted_by: Optional[int] = None
     ) -> ProductTemplateType:
+        require_permission(info, "CREATE_PRODUCT_TEMPLATE")
         db = SessionLocal()
         db_product = ProductTemplateModel(
             name=name,
@@ -49,6 +52,7 @@ class ProductTemplateMutations:
     @strawberry.mutation(name="updateProductTemplate")
     def update_product_template(
         self,
+        info: strawberry.types.Info,
         product_id: int,
         name: Optional[str] = None,
         code: Optional[str] = None,
@@ -57,6 +61,7 @@ class ProductTemplateMutations:
         deleted_at: Optional[datetime] = None,
         deleted_by: Optional[int] = None
     ) -> Optional[ProductTemplateType]:
+        require_permission(info, "UPDATE_PRODUCT_TEMPLATE")
         db = SessionLocal()
         db_product = db.query(ProductTemplateModel).filter(ProductTemplateModel.id == product_id).first()
         if db_product:
@@ -89,7 +94,8 @@ class ProductTemplateMutations:
         return result
 
     @strawberry.mutation(name="deleteProductTemplate")
-    def delete_product_template(self, product_id: int, deleted_by: int) -> Optional[ProductTemplateType]:
+    def delete_product_template(self, info: strawberry.types.Info, product_id: int, deleted_by: int) -> Optional[ProductTemplateType]:
+        require_permission(info, "DELETE_PRODUCT_TEMPLATE")
         db = SessionLocal()
         db_product = db.query(ProductTemplateModel).filter(ProductTemplateModel.id == product_id).first()
         if db_product:
