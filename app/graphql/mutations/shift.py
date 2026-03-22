@@ -212,14 +212,15 @@ class ShiftMutations:
                 shift_user.deleted_at = func.now()
                 shift_user.deleted_by = deleted_by
             
-            # 2. Soft delete all ProductSlotReading records for this shift
+            # 2. Void all ProductSlotReading records for this shift
             readings = db.query(ProductSlotReadingModel).filter(
                 ProductSlotReadingModel.shift_id == shift_id,
-                ProductSlotReadingModel.deleted_at.is_(None)
+                ProductSlotReadingModel.voided_at.is_(None)
             ).all()
             for reading in readings:
-                reading.deleted_at = func.now()
-                reading.deleted_by = deleted_by
+                reading.voided_at = func.now()
+                reading.voided_by = deleted_by
+                reading.void_reason = "Shift deleted"
             
             # 3. Soft delete the shift itself
             db_shift.deleted_at = func.now()

@@ -108,14 +108,15 @@ class ProductTemplateMutations:
             ).all()
             
             for product in products:
-                # 1a. Soft delete ProductSlotReadings for this product
+                # 1a. Void ProductSlotReadings for this product
                 product_readings = db.query(ProductSlotReadingModel).filter(
                     ProductSlotReadingModel.product_id == product.id,
-                    ProductSlotReadingModel.deleted_at.is_(None)
+                    ProductSlotReadingModel.voided_at.is_(None)
                 ).all()
                 for reading in product_readings:
-                    reading.deleted_at = func.now()
-                    reading.deleted_by = deleted_by
+                    reading.voided_at = func.now()
+                    reading.voided_by = deleted_by
+                    reading.void_reason = "Product template deleted"
                 
                 # 1b. Soft delete ProductSlots for this product
                 product_slots = db.query(ProductSlotModel).filter(
@@ -123,14 +124,15 @@ class ProductTemplateMutations:
                     ProductSlotModel.deleted_at.is_(None)
                 ).all()
                 for slot in product_slots:
-                    # Soft delete ProductSlotReadings for this slot
+                    # Void ProductSlotReadings for this slot
                     slot_readings = db.query(ProductSlotReadingModel).filter(
                         ProductSlotReadingModel.product_slot_id == slot.id,
-                        ProductSlotReadingModel.deleted_at.is_(None)
+                        ProductSlotReadingModel.voided_at.is_(None)
                     ).all()
                     for reading in slot_readings:
-                        reading.deleted_at = func.now()
-                        reading.deleted_by = deleted_by
+                        reading.voided_at = func.now()
+                        reading.voided_by = deleted_by
+                        reading.void_reason = "Product template deleted"
                     
                     slot.deleted_at = func.now()
                     slot.deleted_by = deleted_by

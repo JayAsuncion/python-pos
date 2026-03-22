@@ -9,15 +9,26 @@ from app.database import SessionLocal
 
 @strawberry.type
 class ProductSlotReadingMutations:
-    @strawberry.mutation(name="deleteProductSlotReading")
-    def delete_product_slot_reading(self, info: strawberry.types.Info, product_slot_reading_id: int, deleted_by: int) -> Optional[ProductSlotReadingType]:
-        require_permission(info, "DELETE_PRODUCT_SLOT_READING")
+    @strawberry.mutation(name="voidProductSlotReading")
+    def void_product_slot_reading(
+        self, 
+        info: strawberry.types.Info, 
+        product_slot_reading_id: int, 
+        voided_by: int,
+        void_reason: str
+    ) -> Optional[ProductSlotReadingType]:
+        require_permission(info, "VOID_PRODUCT_SLOT_READING")
         db = SessionLocal()
-        db_reading = db.query(ProductSlotReadingModel).filter(ProductSlotReadingModel.id == product_slot_reading_id).first()
+        db_reading = db.query(ProductSlotReadingModel).filter(
+            ProductSlotReadingModel.id == product_slot_reading_id,
+            ProductSlotReadingModel.voided_at.is_(None)
+        ).first()
+        
         if db_reading:
-            # Soft delete
-            db_reading.deleted_at = func.now()
-            db_reading.deleted_by = deleted_by
+            # Void the reading
+            db_reading.voided_at = func.now()
+            db_reading.voided_by = voided_by
+            db_reading.void_reason = void_reason
             db.commit()
             db.refresh(db_reading)
             
@@ -48,8 +59,9 @@ class ProductSlotReadingMutations:
                 quantity_sold=quantity_sold,
                 revenue_amount=revenue_amount,
                 cost_amount=cost_amount,
-                deleted_at=db_reading.deleted_at,
-                deleted_by=db_reading.deleted_by,
+                voided_at=db_reading.voided_at,
+                voided_by=db_reading.voided_by,
+                void_reason=db_reading.void_reason,
                 created_at=db_reading.created_at,
                 created_by=db_reading.created_by,
                 updated_at=db_reading.updated_at,

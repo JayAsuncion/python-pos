@@ -19,9 +19,12 @@ class ProductSlotReading(Base):
     cost_price_snapshot = Column(Numeric(15, 6), nullable=False)  # Price at shift start
     selling_price_snapshot = Column(Numeric(15, 6), nullable=False)  # Price at shift start
     
+    # Void tracking fields
+    voided_at = Column(PG_TIMESTAMP(timezone=True), nullable=True)
+    voided_by = Column(Integer, nullable=True)
+    void_reason = Column(String, nullable=True)
+    
     # Standard audit fields
-    deleted_at = Column(PG_TIMESTAMP(timezone=True), nullable=True)
-    deleted_by = Column(Integer, nullable=True)
     created_at = Column(PG_TIMESTAMP(timezone=True), server_default=func.now(), nullable=False)
     created_by = Column(Integer, nullable=True)
     updated_at = Column(PG_TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

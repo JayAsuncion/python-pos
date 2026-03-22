@@ -31,7 +31,7 @@ BASE_PERMISSIONS = [
     ("UPDATE_PRODUCT_SLOT", "Update Product Slot", "Can update product slot details", "PRODUCT_SLOT"),
     ("DELETE_PRODUCT_SLOT", "Delete Product Slot", "Can delete product slots", "PRODUCT_SLOT"),
     # ProductSlotReading
-    ("DELETE_PRODUCT_SLOT_READING", "Delete Product Slot Reading", "Can delete product slot readings", "PRODUCT_SLOT_READING"),
+    ("VOID_PRODUCT_SLOT_READING", "Void Product Slot Reading", "Can void product slot readings", "PRODUCT_SLOT_READING"),
     # Shift
     ("VIEW_SHIFT", "View Shifts", "Can view shift list and details", "SHIFT"),
     ("START_SHIFT", "Start Shift", "Can start a new shift", "SHIFT"),
@@ -82,7 +82,7 @@ DEFAULT_ROLES = [
             "VIEW_PRODUCT_SLOT", "CREATE_PRODUCT_SLOT", "UPDATE_PRODUCT_SLOT", "DELETE_PRODUCT_SLOT",
             "VIEW_SHIFT", "START_SHIFT", "END_SHIFT", "DELETE_SHIFT",
             "VIEW_SHIFT_TEMPLATE", "CREATE_SHIFT_TEMPLATE", "UPDATE_SHIFT_TEMPLATE", "DELETE_SHIFT_TEMPLATE",
-            "DELETE_SHIFT_USER", "DELETE_PRODUCT_SLOT_READING",
+            "DELETE_SHIFT_USER", "VOID_PRODUCT_SLOT_READING",
         ],
     ),
     (
@@ -123,15 +123,17 @@ def seed_permissions():
 
 
 def seed_default_roles():
-    """Seed default roles and assign permissions. Skips existing roles."""
+    """Seed default roles and assign permissions. Updates existing roles with new permissions."""
     db = SessionLocal()
     all_permissions = {p.code: p.id for p in db.query(Permission).all()}
     created_count = 0
+    updated_count = 0
 
     for code, name, description, permission_codes in DEFAULT_ROLES:
         existing = db.query(Role).filter(Role.code == code).first()
+        
         if not existing:
-            # Create role
+            # Create new role
             role = Role(code=code, name=name, description=description, is_system_role=True)
             db.add(role)
             db.flush()  # Get the role.id
@@ -151,9 +153,39 @@ def seed_default_roles():
             db.commit()
             created_count += 1
             print(f"  Created role '{code}' with {len(codes_to_assign)} permissions")
+        else:
+            # Update existing role
+            # Determine what permissions should be assigned
+            if permission_codes is None:
+                # ALL permissions
+                expected_perm_codes = set(all_permissions.keys())
+            else:
+                expected_perm_codes = set(permission_codes)
+            
+            # Get current permissions for this role
+            current_role_perms = db.query(RolePermission).filter(
+                RolePermission.role_id == existing.id
+            ).all()
+            current_perm_ids = {rp.permission_id for rp in current_role_perms}
+            
+            # Get permission IDs from codes
+            expected_perm_ids = {all_permissions[code] for code in expected_perm_codes if code in all_permissions}
+            
+            # Find missing permissions
+            missing_perm_ids = expected_perm_ids - current_perm_ids
+            
+            if missing_perm_ids:
+                # Add missing permissions
+                for perm_id in missing_perm_ids:
+                    role_perm = RolePermission(role_id=existing.id, permission_id=perm_id)
+                    db.add(role_perm)
+                
+                db.commit()
+                updated_count += 1
+                print(f"  Updated role '{code}' - added {len(missing_perm_ids)} new permissions")
 
     db.close()
-    print(f"Seeded {created_count} new roles ({len(DEFAULT_ROLES)} total defined)")
+    print(f"Seeded {created_count} new roles, updated {updated_count} existing roles ({len(DEFAULT_ROLES)} total defined)")
 
 
 if __name__ == "__main__":

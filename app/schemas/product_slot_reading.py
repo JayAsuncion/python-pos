@@ -29,8 +29,9 @@ class ProductSlotReadingType:
     quantity_sold: Optional[float]  # Computed: end_reading - start_reading
     revenue_amount: Optional[float]  # Computed: quantity_sold * selling_price_snapshot
     cost_amount: Optional[float]  # Computed: quantity_sold * cost_price_snapshot
-    deleted_at: Optional[datetime]
-    deleted_by: Optional[int]
+    voided_at: Optional[datetime]
+    voided_by: Optional[int]
+    void_reason: Optional[str]
     created_at: datetime
     created_by: Optional[int]
     updated_at: datetime
