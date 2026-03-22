@@ -7,6 +7,7 @@ from app.database import SessionLocal
 from app.models.user import User
 from app.models.role import Role
 from app.models.user_role import UserRole
+from app.auth.security import hash_password
 
 def bootstrap_admin():
     """Create the first super admin user if it doesn't exist."""
@@ -19,13 +20,13 @@ def bootstrap_admin():
         db.close()
         return
     
-    # Create super admin user (with plaintext password - will be forced to reset on first login)
+    # Create super admin user with hashed password
     admin_user = User(
         username="superadmin",
         email="admin@pos.com",
         first_name="Super",
         last_name="Admin",
-        hashed_password="changeme123"  # Plaintext - will trigger password reset
+        hashed_password=hash_password("changeme123")  # Bcrypt hashed
     )
     db.add(admin_user)
     db.flush()  # Get the user.id
@@ -48,7 +49,7 @@ def bootstrap_admin():
     
     print(f"✅ Super admin user created successfully!")
     print(f"   Username: superadmin")
-    print(f"   Password: changeme123 (MUST be changed on first login)")
+    print(f"   Password: changeme123 (please change on first login)")
     print(f"   Email: admin@pos.com")
     
     db.close()
