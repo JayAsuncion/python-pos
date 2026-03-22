@@ -200,6 +200,45 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "Change Selling Price",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation ChangeSellingPrice($productTemplateId: Int!, $sellingPrice: Float!, $updatedBy: Int) { changeSellingPrice(productTemplateId: $productTemplateId, sellingPrice: $sellingPrice, updatedBy: $updatedBy) { id productTemplateId name code image startingStock runningStock costPrice sellingPrice isActive deletedAt deletedBy createdAt createdBy updatedAt updatedBy } }",
+            "variables": "{\n  \"productTemplateId\": 1,\n  \"sellingPrice\": 29.99,\n  \"updatedBy\": 1\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/graphql",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
     }
   ],
   "event": [

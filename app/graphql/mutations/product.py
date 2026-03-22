@@ -222,3 +222,57 @@ class ProductMutations:
             result = None
         db.close()
         return result
+
+    @strawberry.mutation(name="changeSellingPrice")
+    def change_selling_price(
+        self,
+        info: strawberry.types.Info,
+        product_template_id: int,
+        selling_price: float,
+        updated_by: Optional[int] = None
+    ) -> list[ProductType]:
+        require_permission(info, "UPDATE_PRODUCT")
+        db = SessionLocal()
+        
+        # Find all products matching the template ID that are:
+        # 1. Active (is_active=True)
+        # 2. Have stock (running_stock > 0)
+        # 3. Not deleted (deleted_at is None)
+        products = db.query(ProductModel).filter(
+            ProductModel.product_template_id == product_template_id,
+            ProductModel.is_active == True,
+            ProductModel.running_stock > 0,
+            ProductModel.deleted_at.is_(None)
+        ).all()
+        
+        updated_products = []
+        
+        for product in products:
+            product.selling_price = selling_price
+            if updated_by is not None:
+                product.updated_by = updated_by
+            
+            db.commit()
+            db.refresh(product)
+            
+            updated_products.append(ProductType(
+                id=product.id,
+                product_template_id=product.product_template_id,
+                name=product.name,
+                code=product.code,
+                image=product.image,
+                starting_stock=float(product.starting_stock),
+                running_stock=float(product.running_stock),
+                cost_price=float(product.cost_price),
+                selling_price=float(product.selling_price),
+                is_active=product.is_active,
+                deleted_at=product.deleted_at,
+                deleted_by=product.deleted_by,
+                created_at=product.created_at,
+                created_by=product.created_by,
+                updated_at=product.updated_at,
+                updated_by=product.updated_by
+            ))
+        
+        db.close()
+        return updated_products
