@@ -1,0 +1,174 @@
+# Cursor Rules for Python POS Project
+
+## Project Context
+
+**Stack:** FastAPI + GraphQL (Strawberry) + SQLAlchemy + PostgreSQL + Alembic  
+**Auth:** JWT tokens with RBAC permission system  
+**Architecture:** Entity-based organization (models, schemas, GraphQL resolvers)
+
+---
+
+## Critical Rules
+
+### 1. ALWAYS Read Documentation First
+- **Before creating entities:** Read `prompts/02-entity-creation-guide.md`
+- **For entity reference:** Read `prompts/01-entity-reference.md`
+- **For auth/permissions:** Read `prompts/03-auth-and-permissions.md`
+
+### 2. EVERY GraphQL Resolver MUST Implement RBAC
+```python
+from app.auth.permissions import require_permission
+
+@strawberry.mutation
+def create_entity(self, info: strawberry.types.Info, ...) -> EntityType:
+    user = require_permission(info, "CREATE_ENTITY")
+    # ... implementation
+```
+
+### 3. ALWAYS Update Documentation
+After creating/modifying entities:
+- Update `prompts/01-entity-reference.md` with entity details
+- Update "Last Updated" date
+- Document relationships and business rules
+- **This is MANDATORY, not optional**
+
+### 4. Use Efficient Editing
+- Use `multi_replace_string_in_file` for multiple independent edits
+- Never make sequential edits when you can batch them
+
+### 5. Follow Naming Conventions
+- **Python/Database:** snake_case (`product_id`, `shift_name`)
+- **GraphQL:** camelCase (`productId`, `shiftName`)
+- **Types:** PascalCase + "Type" (`ProductType`)
+- **Permissions:** SCREAMING_SNAKE_CASE (`CREATE_USER`, `VIEW_PRODUCT`)
+
+---
+
+## Code Patterns
+
+### Database Operations
+```python
+db = SessionLocal()
+try:
+    # ... do work ...
+    db.commit()
+    db.refresh(entity)
+    result = convert_to_type(entity)
+finally:
+    db.close()
+return result
+```
+
+### Mutations Must Include Audit Fields
+```python
+entity = EntityModel(
+    field1=value1,
+    created_by=user.id  # From require_permission()
+)
+```
+
+### Queries Must Filter Soft-Deleted
+```python
+entities = db.query(EntityModel).filter(EntityModel.deleted_at.is_(None)).all()
+```
+
+### GraphQL Type Conversion
+```python
+# Numeric → float
+amount=float(entity.amount) if entity.amount else None
+
+# Optional fields
+description=entity.description if entity.description else None
+```
+
+---
+
+## File Organization
+
+**Models:** `app/models/{entity}.py`  
+**Schemas:** `app/schemas/{entity}.py`  
+**Mutations:** `app/graphql/mutations/{entity}.py`  
+**Queries:** `app/graphql/queries/{entity}.py`  
+**Permissions:** `app/auth/seed_permissions.py`
+
+---
+
+## Virtual Environment Reminder
+
+Before running Python commands:
+```bash
+source python-pos-env-39/Scripts/activate
+export $(grep -v '^#' .env | xargs)
+```
+
+---
+
+## Common Pitfalls to Avoid
+
+❌ **Don't:**
+- Skip permission checks
+- Forget to close database sessions
+- Hardcode user IDs in audit fields
+- Skip documentation updates
+- Return deleted records (always filter deleted_at)
+- Make sequential edits instead of batch
+
+✅ **Do:**
+- Use `require_permission()` on every protected resolver
+- Always `db.close()`
+- Use `user.id` from authentication
+- Update `prompts/01-entity-reference.md` after changes
+- Filter `deleted_at.is_(None)`
+- Use `multi_replace_string_in_file`
+
+---
+
+## Quick Reference
+
+**Permission Pattern:**
+```python
+user = require_permission(info, "{ACTION}_{ENTITY}")
+```
+
+**Permission Actions:** CREATE, VIEW, UPDATE, DELETE, START, END, ASSIGN, GRANT, REVOKE
+
+**Audit Levels:**
+1. No audit (User)
+2. Soft delete only (ProductTemplate, Permission, Role)  
+3. Full audit trail (Product, Shift, most entities)
+
+**Data Types:**
+- String → `Column(String)`
+- Integer → `Column(Integer)`
+- Money/Decimal → `Column(Numeric(15, 6))`
+- Boolean → `Column(Boolean)`
+- Timestamp → `Column(PG_TIMESTAMP(timezone=True))`
+
+---
+
+## When to Consult Documentation
+
+| Task | Read This |
+|------|-----------|
+| Creating new entity | `prompts/02-entity-creation-guide.md` |
+| Understanding data model | `prompts/01-entity-reference.md` |
+| Adding permissions | `prompts/03-auth-and-permissions.md` |
+| Need code templates | `prompts/templates/entity-template.md` |
+| Project setup/workflows | `DEV_WORKFLOW.md` |
+
+---
+
+## Verification Checklist
+
+After creating an entity:
+- [ ] Permission checks in all resolvers
+- [ ] Database sessions closed
+- [ ] Audit fields populated from `user.id`
+- [ ] Soft-deleted records filtered
+- [ ] Permissions seeded
+- [ ] Migration generated and applied
+- [ ] **Documentation updated** in `prompts/01-entity-reference.md`
+
+---
+
+Remember: Security (RBAC) and documentation are NOT optional!

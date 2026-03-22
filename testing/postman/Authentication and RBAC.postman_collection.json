@@ -1520,8 +1520,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation CreateUser($username: String!, $email: String!, $firstName: String!, $lastName: String!, $hashedPassword: String!) {\n  createUser(username: $username, email: $email, firstName: $firstName, lastName: $lastName, hashedPassword: $hashedPassword) {\n    id\n    username\n    email\n  }\n}",
-										"variables": "{\n  \"username\": \"cashier1\",\n  \"email\": \"cashier1@pos.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Cashier\",\n  \"hashedPassword\": \"welcome123\"\n}"
+										"query": "mutation CreateUser($username: String!, $email: String!, $firstName: String!, $lastName: String!, $password: String!) {\n  createUser(username: $username, email: $email, firstName: $firstName, lastName: $lastName, password: $password) {\n    id\n    username\n    email\n  }\n}",
+										"variables": "{\n  \"username\": \"cashier1\",\n  \"email\": \"cashier1@pos.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Cashier\",\n  \"password\": \"welcome123\"\n}"
 									}
 								},
 								"url": {
@@ -1636,8 +1636,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation CreateUser($username: String!, $email: String!, $firstName: String!, $lastName: String!, $hashedPassword: String!) {\n  createUser(username: $username, email: $email, firstName: $firstName, lastName: $lastName, hashedPassword: $hashedPassword) {\n    id\n    username\n  }\n}",
-										"variables": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@pos.com\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"hashedPassword\": \"test123\"\n}"
+										"query": "mutation CreateUser($username: String!, $email: String!, $firstName: String!, $lastName: String!, $password: String!) {\n  createUser(username: $username, email: $email, firstName: $firstName, lastName: $lastName, password: $password) {\n    id\n    username\n  }\n}",
+										"variables": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@pos.com\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"password\": \"test123\"\n}"
 									}
 								},
 								"url": {

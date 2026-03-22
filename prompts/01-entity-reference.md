@@ -1,11 +1,8 @@
-# Entity Context Map
+# Entity Reference Documentation
 
-**⚠️ IMPORTANT:** This document must be kept up-to-date whenever entities are created, modified, or deleted.  
-See [`AGENTS.md`](AGENTS.md) for the mandatory update checklist.
+**Purpose:** Single source of truth for all entities in the Python POS system
 
-This document provides a comprehensive overview of all entities in the Python POS system, their relationships, and business rules.
-
-**Last Updated:** March 2, 2026
+**Last Updated:** March 22, 2026
 
 ---
 
@@ -417,14 +414,17 @@ RBAC Flow: User → UserRole → Role → RolePermission → Permission
 
 1. **No Audit** (User only)
    - Just basic fields
+   - No tracking of changes
 
 2. **Soft Delete Only** (ProductTemplate, Permission, Role)
    - Fields: `deleted_at`, `deleted_by`
    - Records marked as deleted but not removed
+   - No update tracking
 
 3. **Full Audit Trail** (Product, ProductSlot, ShiftTemplate, Shift, ShiftUser, ProductSlotReading, UserRole, RolePermission)
    - Fields: `deleted_at`, `deleted_by`, `created_at`, `created_by`, `updated_at`, `updated_by`
    - Complete tracking of all changes
+   - Who created, who last updated, who deleted
 
 ### Field Conventions
 
@@ -448,7 +448,7 @@ RBAC Flow: User → UserRole → Role → RolePermission → Permission
 
 - `create{Entity}` - Create new record
 - `update{Entity}` - Update existing record (all fields optional)
-- `delete{Entity}` - Hard delete (despite soft delete fields existing in models)
+- `delete{Entity}` - Soft delete (marks deleted_at, doesn't remove from DB)
 
 ### Special Mutations (Workflow Operations)
 
@@ -668,36 +668,33 @@ def my_resolver(self, info: strawberry.types.Info):
 
 ---
 
-## Notes for AI Agents
+## Entity Summary
 
-When creating new entities, follow these guidelines:
+**Total Entities:** 12
 
-1. **Determine audit level needed:**
-   - Simple reference data → No audit
-   - Configuration/setup data → Soft delete only
-   - Transactional/operational data → Full audit trail
+**Master Data (5):**
+- User
+- Permission
+- Role
+- ProductTemplate
+- ShiftTemplate
 
-2. **Use standard field names and types:**
-   - Follow the naming conventions above
-   - Use Numeric(15,6) for measurements/prices
-   - Use proper timestamp types with timezone
+**Operational (3):**
+- Product
+- ProductSlot
+- Shift
+- ProductSlotReading
 
-3. **Define relationships clearly:**
-   - Use ForeignKey constraints
-   - Define SQLAlchemy relationships with backref
-   - Use appropriate cascade rules
+**Junction (3):**
+- UserRole
+- RolePermission
+- ShiftUser
 
-4. **Create corresponding GraphQL schema:**
-   - Create Strawberry @strawberry.type for each model
-   - Add queries (list and single)
-   - Add mutations (CRUD or workflow-specific)
+**Audit Patterns:**
+- No audit: 1 (User)
+- Soft delete only: 3 (Permission, Role, ProductTemplate)
+- Full audit trail: 8 (Product, ProductSlot, ShiftTemplate, Shift, ProductSlotReading, UserRole, RolePermission, ShiftUser)
 
-5. **Generate Alembic migration:**
-   - Import all new models in `alembic/env.py`
-   - Run `alembic revision --autogenerate`
-   - Review and test migration
+---
 
-6. **Update this document:**
-   - Add new entity documentation
-   - Update relationship diagram
-   - Document business rules
+**Remember:** This document must be kept up-to-date. When you create, modify, or delete entities, update this file immediately. See [02-entity-creation-guide.md](02-entity-creation-guide.md) for the mandatory update checklist.

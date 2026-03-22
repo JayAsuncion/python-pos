@@ -17,7 +17,7 @@ class UserMutations:
         email: str,
         first_name: str,
         last_name: str,
-        hashed_password: str
+        password: str
     ) -> UserType:
         user = require_permission(info, "CREATE_USER")
         db = SessionLocal()
@@ -26,7 +26,7 @@ class UserMutations:
             email=email,
             first_name=first_name,
             last_name=last_name,
-            hashed_password=hash_password(hashed_password)
+            hashed_password=hash_password(password)
         )
         db.add(db_user)
         db.commit()
@@ -49,7 +49,7 @@ class UserMutations:
         email: Optional[str] = None,
         first_name: Optional[str] = None,
         last_name: Optional[str] = None,
-        hashed_password: Optional[str] = None
+        password: Optional[str] = None
     ) -> Optional[UserType]:
         user = require_permission(info, "UPDATE_USER")
         db = SessionLocal()
@@ -63,8 +63,8 @@ class UserMutations:
                 db_user.first_name = first_name
             if last_name is not None:
                 db_user.last_name = last_name
-            if hashed_password is not None:
-                db_user.hashed_password = hash_password(hashed_password)
+            if password is not None:
+                db_user.hashed_password = hash_password(password)
             db.commit()
             db.refresh(db_user)
             result = UserType(
