@@ -9,6 +9,16 @@
     {
       "name": "Get All Shifts",
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "POST",
         "header": [
           {
@@ -38,6 +48,16 @@
     {
       "name": "Get Shifts with Filters",
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "POST",
         "header": [
           {
@@ -67,6 +87,16 @@
     {
       "name": "Get Shift by ID",
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "POST",
         "header": [
           {
@@ -96,6 +126,16 @@
     {
       "name": "Get Active Shift",
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "POST",
         "header": [
           {
@@ -125,6 +165,16 @@
     {
       "name": "Start Shift",
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "POST",
         "header": [
           {
@@ -154,6 +204,16 @@
     {
       "name": "End Shift",
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "POST",
         "header": [
           {
@@ -183,6 +243,16 @@
     {
       "name": "Delete Shift",
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "POST",
         "header": [
           {

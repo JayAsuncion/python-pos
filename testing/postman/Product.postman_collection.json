@@ -9,6 +9,16 @@
     {
       "name": "Get All Products",
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "POST",
         "header": [
           {
@@ -38,6 +48,16 @@
     {
       "name": "Get Product by ID",
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "POST",
         "header": [
           {
@@ -67,6 +87,16 @@
     {
       "name": "Create Product",
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "POST",
         "header": [
           {
@@ -96,6 +126,16 @@
     {
       "name": "Update Product",
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "POST",
         "header": [
           {
@@ -125,6 +165,16 @@
     {
       "name": "Delete Product",
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "POST",
         "header": [
           {
